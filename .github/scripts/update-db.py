@@ -6,6 +6,7 @@ from langchain_community.document_loaders import UnstructuredMarkdownLoader
 import nltk
 
 nltk.download('punkt_tab')
+nltk.download('averaged_perceptron_tagger_eng')
 
 # Azure Cosmos DB parameters
 cosmos_client = CosmosClient(os.getenv("AZURE_COSMOS_DB_URI"), os.getenv("AZURE_COSMOS_DB_KEY"))
