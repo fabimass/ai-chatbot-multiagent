@@ -7,8 +7,13 @@ on:
     paths:
       - "knowledge-base/**"
 
+env:
+  AZURE_COSMOS_DB_URI: ${{ secrets.AZURE_COSMOS_DB_URI }}
+  AZURE_COSMOS_DB_KEY: ${{ secrets.AZURE_COSMOS_DB_KEY }}
+
 jobs:
   update_db:
+    name: Update Database
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
