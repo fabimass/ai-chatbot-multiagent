@@ -18,20 +18,16 @@ cosmos_database_properties = {"id": database_name}
 #  - This overlap helps maintain context across the chunks.
 splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=64)
 
+data_chunks = []
+
+# Iterate over each file in the knowledge base and split it into chunks
 for root, dirs, files in os.walk('knowledge-base'):
     for file in files:
-        # Get the full file path
         file_path = os.path.join(root, file)
-        print(f"Found file: {file_path}")
+        data_loader = UnstructuredMarkdownLoader("example_data/example_markdown.md")
 
-#md_loader = UnstructuredMarkdownLoader("example_data/example_markdown.md")
+        # Load pdf and split into chunks.
+        file_chunks = data_loader.load_and_split(text_splitter=splitter)
+        data_chunks.append(file_chunks)
 
-# Load pdf and split into chunks.
-#md_chunks = md_loader.load_and_split(text_splitter=splitter)
-
-# Get the number of chunks
-#print(f"Number of chunks: {len(md_chunks)}")
-
-# Print the first 5 chunks
-#for chunk in md_chunks[:5]:
-#    print(chunk)
+        print(f"{file_path} splitted into {len(file_chunks)} chunks")
