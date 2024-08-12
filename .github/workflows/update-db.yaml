@@ -1,0 +1,21 @@
+name: Update Database
+
+# The workflow runs when something change in the knowledge base or can be triggered manually
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "knowledge-base/**"
+
+jobs:
+  update_db:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: pip install azure-cosmos==4.7.0 langchain==0.2.11 langchain-community==0.2.10 markdown==3.6
+
+      - name: Run update-db script
+        run: python .github/scripts/update-db.py
