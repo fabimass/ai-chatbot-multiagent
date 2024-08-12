@@ -24,7 +24,7 @@ data_chunks = []
 for root, dirs, files in os.walk('knowledge-base'):
     for file in files:
         file_path = os.path.join(root, file)
-        data_loader = UnstructuredMarkdownLoader("example_data/example_markdown.md")
+        data_loader = UnstructuredMarkdownLoader(file_path)
 
         # Load pdf and split into chunks.
         file_chunks = data_loader.load_and_split(text_splitter=splitter)
