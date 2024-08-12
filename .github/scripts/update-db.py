@@ -3,6 +3,9 @@ from azure.cosmos import CosmosClient, PartitionKey
 from langchain_community.vectorstores.azure_cosmos_db_no_sql import AzureCosmosDBNoSqlVectorSearch
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import UnstructuredMarkdownLoader
+import nltk
+
+nltk.download('punkt_tab')
 
 # Azure Cosmos DB parameters
 cosmos_client = CosmosClient(os.getenv("AZURE_COSMOS_DB_URI"), os.getenv("AZURE_COSMOS_DB_KEY"))
