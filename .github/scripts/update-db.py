@@ -30,8 +30,12 @@ for root, dirs, files in os.walk('knowledge-base'):
         file_path = os.path.join(root, file)
         data_loader = UnstructuredMarkdownLoader(file_path)
 
-        # Load pdf and split into chunks.
-        file_chunks = data_loader.load_and_split(text_splitter=splitter)
-        data_chunks.append(file_chunks)
+        try:
+            # Load pdf and split into chunks.
+            file_chunks = data_loader.load_and_split(text_splitter=splitter)
+            data_chunks.append(file_chunks)
 
-        print(f"{file_path} splitted into {len(file_chunks)} chunks")
+            print(f"{file_path} splitted into {len(file_chunks)} chunks")
+
+        except:
+            print(f"Error splitting {file_path}")
