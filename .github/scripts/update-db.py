@@ -31,7 +31,7 @@ for root, dirs, files in os.walk('knowledge-base'):
 
         # Construct the data loader according to the file extension
         if file.endswith('.pdf'):
-            data_loader = PyPDFLoader("example_data/example_pdf.pdf")
+            data_loader = PyPDFLoader(file_path)
         elif file.endswith('.md'):
             data_loader = UnstructuredMarkdownLoader(file_path)
         
