@@ -2,7 +2,7 @@ import os
 from azure.cosmos import CosmosClient, PartitionKey
 from langchain_community.vectorstores.azure_cosmos_db_no_sql import AzureCosmosDBNoSqlVectorSearch
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import UnstructuredMarkdownLoader
+from langchain_community.document_loaders import UnstructuredMarkdownLoader, PyPDFLoader
 import nltk
 
 nltk.download('punkt_tab')
@@ -28,8 +28,13 @@ data_chunks = []
 for root, dirs, files in os.walk('knowledge-base'):
     for file in files:
         file_path = os.path.join(root, file)
-        data_loader = UnstructuredMarkdownLoader(file_path)
 
+        # Construct the data loader according to the file extension
+        if file.endswith('.pdf'):
+            data_loader = PyPDFLoader("example_data/example_pdf.pdf")
+        elif file.endswith('.md'):
+            data_loader = UnstructuredMarkdownLoader(file_path)
+        
         try:
             # Load pdf and split into chunks.
             file_chunks = data_loader.load_and_split(text_splitter=splitter)
