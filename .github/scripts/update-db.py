@@ -86,4 +86,4 @@ for doc in documents:
     # Check that the document is not empty
     if len(doc) > 0 :
         inserted_ids = cosmos_db.add_documents(doc)
-    print(f"Inserted {len(inserted_ids)} documents.")
+        print(f"Inserted {len(inserted_ids)} documents.")
