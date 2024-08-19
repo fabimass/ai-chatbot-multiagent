@@ -78,16 +78,12 @@ for root, dirs, files in os.walk('knowledge-base'):
         try:
             # Load pdf and split into chunks.
             file_chunks = data_loader.load_and_split(text_splitter=splitter)
-            documents.append(file_chunks)
-
             print(f"{file_path} splitted into {len(file_chunks)} chunks")
+
+            # Push to the database
+            if len(file_chunks) > 0 :
+                inserted_ids = cosmos_db.add_documents(file_chunks)
+                print(f"Inserted {len(inserted_ids)} documents.")
 
         except:
             print(f"Error splitting {file_path}")
-
-# Insert data
-for doc in documents:
-    # Check that the document is not empty
-    if len(doc) > 0 :
-        inserted_ids = cosmos_db.add_documents(doc)
-        print(f"Inserted {len(inserted_ids)} documents.")
