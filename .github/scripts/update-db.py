@@ -58,7 +58,7 @@ cosmos_db.delete([])
 #  - This overlap helps maintain context across the chunks.
 splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=64)
 
-data_chunks = []
+documents = []
 
 # Iterate over each file in the knowledge base and split it into chunks
 for root, dirs, files in os.walk('knowledge-base'):
@@ -74,7 +74,7 @@ for root, dirs, files in os.walk('knowledge-base'):
         try:
             # Load pdf and split into chunks.
             file_chunks = data_loader.load_and_split(text_splitter=splitter)
-            data_chunks.append(file_chunks)
+            documents.append(file_chunks)
 
             print(f"{file_path} splitted into {len(file_chunks)} chunks")
 
@@ -82,5 +82,6 @@ for root, dirs, files in os.walk('knowledge-base'):
             print(f"Error splitting {file_path}")
 
 # Insert data
-inserted_ids = cosmos_db.add_documents(data_chunks)
-print(f"Inserted {len(inserted_ids)} documents.")
+for doc in documents:
+    inserted_ids = cosmos_db.add_documents(doc)
+    print(f"Inserted {len(inserted_ids)} documents.")
