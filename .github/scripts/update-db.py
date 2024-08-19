@@ -49,8 +49,12 @@ cosmos_db = AzureCosmosDBNoSqlVectorSearch(
     create_container=True
 )
 
+# Get all the existing documents in the database
+all_docs = cosmos_db._container.query_items("SELECT c.id FROM c", enable_cross_partition_query=True)
+
 # Clean database
-cosmos_db.delete([])
+for doc in all_docs:
+    cosmos_db.delete_document_by_id(doc["id"])
 
 # Define how the text should be split:
 #  - Each chunk should be up to 512 characters long.
