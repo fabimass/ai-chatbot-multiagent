@@ -83,5 +83,7 @@ for root, dirs, files in os.walk('knowledge-base'):
 
 # Insert data
 for doc in documents:
-    inserted_ids = cosmos_db.add_documents(doc)
+    # Check that the document is not empty
+    if len(doc) > 0 :
+        inserted_ids = cosmos_db.add_documents(doc)
     print(f"Inserted {len(inserted_ids)} documents.")
