@@ -80,3 +80,7 @@ for root, dirs, files in os.walk('knowledge-base'):
 
         except:
             print(f"Error splitting {file_path}")
+
+# Insert data
+inserted_ids = cosmos_db.add_documents(data_chunks)
+print(f"Inserted {len(inserted_ids)} documents.")
