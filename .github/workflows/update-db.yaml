@@ -10,6 +10,7 @@ on:
 env:
   AZURE_COSMOS_DB_URI: ${{ secrets.AZURE_COSMOS_DB_URI }}
   AZURE_COSMOS_DB_KEY: ${{ secrets.AZURE_COSMOS_DB_KEY }}
+  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
 jobs:
   update_db:
