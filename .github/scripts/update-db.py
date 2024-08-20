@@ -52,7 +52,6 @@ cosmos_db = AzureCosmosDBNoSqlVectorSearch(
 # Get all the existing documents in the database
 all_docs = cosmos_db._container.query_items("SELECT c.id FROM c", enable_cross_partition_query=True)
 
-print(f"Documents in the database: {len(all_docs)}")
 print("Cleaning up database...")
 
 # Clean database
