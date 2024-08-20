@@ -52,9 +52,14 @@ cosmos_db = AzureCosmosDBNoSqlVectorSearch(
 # Get all the existing documents in the database
 all_docs = cosmos_db._container.query_items("SELECT c.id FROM c", enable_cross_partition_query=True)
 
+print(f"Documents in the database: {len(all_docs)}")
+print("Cleaning up database...")
+
 # Clean database
 for doc in all_docs:
     cosmos_db.delete_document_by_id(doc["id"])
+
+print("Database clean and ready to be updated!")
 
 # Define how the text should be split:
 #  - Each chunk should be up to 512 characters long.
@@ -64,7 +69,9 @@ splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=64)
 
 documents = []
 
-# Iterate over each file in the knowledge base and split it into chunks
+print("Discovering files in the knowledge base...")
+
+# Iterate over each file in the knowledge base, split it into chunks and push it to the database
 for root, dirs, files in os.walk('knowledge-base'):
     for file in files:
         file_path = os.path.join(root, file)
