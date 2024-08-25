@@ -92,11 +92,7 @@ jobs:
             --name ${{ secrets.AZURE_SEARCH_SERVICE_NAME }} \
             --query "networkRuleSet.ipRules" -o tsv)
 
-          # Remove the IP from the list
-          updated_rules=$(echo "$existing_rules" | sed "/${{ env.PUBLIC_IP }}/d")
+          # Remove the last IP rule (last element in the array)
+          updated_rules=$(echo "$existing_rules" | sed '$d' | sed 's/,$//')
 
-          # Update the search service with the modified rules
-          az search service update \
-            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --name ${{ secrets.AZURE_SEARCH_SERVICE_NAME }} \
-            --set networkRuleSet.ipRules="[$updated_rules]"
+          echo $updated_rules
