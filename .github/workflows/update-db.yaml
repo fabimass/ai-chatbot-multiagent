@@ -39,15 +39,36 @@ jobs:
               "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
             }
 
-      - name: Add IP to Azure AI whitelist
+      - name: Add IP to Azure OpenAI whitelist
         run: |
           az cognitiveservices account network-rule add \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --name ${{ secrets.AZURE_OPENAI_RESOURCE_NAME }} \
+            --name ${{ secrets.AZURE_OPENAI_SERVICE_NAME }} \
             --ip-address ${{ env.PUBLIC_IP }}
+
+      - name: Add IP to Azure Search whitelist
+        run: |
+          az search service update \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name ${{ secrets.AZURE_SEARCH_SERVICE_NAME }} \
+            --ip-rules ${{ env.PUBLIC_IP }}
 
       - name: Wait for 30 seconds
         run: sleep 30
 
       - name: Run update-db script
         run: python .github/scripts/update-db.py
+
+      - name: Remove IP from Azure OpenAI whitelist
+        run: |
+          az cognitiveservices account network-rule remove \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name ${{ secrets.AZURE_OPENAI_SERVICE_NAME }} \
+            --ip-address ${{ env.PUBLIC_IP }}
+
+      - name: Remove IP from Azure Search whitelist
+        run: |
+          az search service update \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name ${{ secrets.AZURE_SEARCH_SERVICE_NAME }} \
+            --remove ip-rules ${{ env.PUBLIC_IP }}
