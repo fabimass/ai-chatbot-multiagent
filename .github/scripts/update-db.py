@@ -1,4 +1,5 @@
 import os
+import requests
 from langchain_openai import AzureOpenAIEmbeddings
 from langchain_community.vectorstores.azuresearch import AzureSearch
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -12,19 +13,49 @@ nltk.download('averaged_perceptron_tagger_eng')
 openai_embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
 
 # Connect with database
+index_name = "main"
 azure_search = AzureSearch(
     azure_search_endpoint=os.getenv("AZURE_SEARCH_URI"),
     azure_search_key=os.getenv("AZURE_SEARCH_KEY"),
-    index_name="main",
+    index_name=index_name,
     embedding_function=openai_embeddings.embed_query
 )
 
 print("Cleaning up database...")
 
-# Clean database
-azure_search.delete()
+def delete_all_documents_from_index(azure_search_endpoint, azure_search_key, index_name):
+    # Set up the API URL and headers
+    url = f"{azure_search_endpoint}/indexes/{index_name}/docs/index?api-version=2024-06-01"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {azure_search_key}"
+    }
 
-print("Database clean and ready to be updated!")
+    # Create the payload to delete all documents
+    payload = {
+        "value": [
+            {
+                "@search.action": "delete",
+                "id": "*"
+            }
+        ]
+    }
+
+    # Send the request to delete all documents
+    response = requests.post(url, headers=headers, json=payload)
+
+    # Check the response
+    if response.status_code == 200:
+        print("All documents deleted successfully.")
+    else:
+        print(f"Failed to delete documents. Status code: {response.status_code}, Response: {response.text}")
+
+# Clean database
+delete_all_documents_from_index(
+    azure_search_endpoint=os.getenv("AZURE_SEARCH_URI"),
+    azure_search_key=os.getenv("AZURE_SEARCH_KEY"),
+    index_name=index_name
+)
 
 # Define how the text should be split:
 #  - Each chunk should be up to 512 characters long.
