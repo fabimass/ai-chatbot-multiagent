@@ -93,6 +93,8 @@ jobs:
             --query "networkRuleSet.ipRules" -o tsv)
 
           # Remove the last IP rule (last element in the array)
-          updated_rules=$(echo "$existing_rules" | sed '$d' | sed 's/,$//')
+          ip_list=$(echo "$existing_rules" | sed '$d' | sed 's/,$//')
+
+          updated_rules=$(echo "$ip_list" | jq -R '[split(" ") | .[] | {value: .}]')
 
           echo $updated_rules
