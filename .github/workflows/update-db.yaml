@@ -55,6 +55,9 @@ jobs:
             --query "networkRuleSet.ipRules" \
             --output json)
 
+          # Prepare the new IP rule as JSON
+          new_ip_rule="{\"ipAddressOrRange\": \"${{ env.PUBLIC_IP }}\"}"
+
       - name: Wait for 30 seconds
         run: sleep 30
 
