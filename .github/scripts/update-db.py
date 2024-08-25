@@ -54,9 +54,8 @@ for root, dirs, files in os.walk('knowledge-base'):
 
             # Push to the database
             if len(file_chunks) > 0 :
-                #inserted_ids = azure_search.add_documents(file_chunks)
-                #print(f"Inserted {len(inserted_ids)} documents")
-                pass
+                inserted_ids = azure_search.add_documents(file_chunks)
+                print(f"Inserted {len(inserted_ids)} documents")
 
         except:
             print(f"Error splitting {file_path}")
