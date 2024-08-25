@@ -95,6 +95,6 @@ jobs:
           # Remove the last IP rule (last element in the array)
           ip_list=$(echo "$existing_rules" | sed '$d' | sed 's/,$//')
 
-          updated_rules=$(echo "$ip_list" | jq -R '[split(" ") | .[] | {value: .}]')
+          updated_rules=$(echo "$ip_list" | awk 'BEGIN {printf "["} {for (i=1; i<=NF; i++) {if (i > 1) printf ","; printf "{\"value\": \"%s\"}", $i} printf "]"}')
 
           echo $updated_rules
