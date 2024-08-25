@@ -65,6 +65,8 @@ jobs:
             updated_rules=$(echo "$existing_rules" | sed 's/]/, '"$new_ip_rule"']/')
           fi
 
+          echo $updated_rules
+
       - name: Wait for 30 seconds
         run: sleep 30
 
