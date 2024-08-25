@@ -1,7 +1,6 @@
 import os
-from azure.cosmos import CosmosClient, PartitionKey
-from langchain_community.vectorstores.azure_cosmos_db_no_sql import AzureCosmosDBNoSqlVectorSearch
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_openai import AzureOpenAIEmbeddings
+from langchain_community.vectorstores.azuresearch import AzureSearch
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import UnstructuredMarkdownLoader, PyPDFLoader
 import nltk
@@ -9,54 +8,21 @@ import nltk
 nltk.download('punkt_tab')
 nltk.download('averaged_perceptron_tagger_eng')
 
-# Azure Cosmos DB parameters
-cosmos_client = CosmosClient(os.getenv("AZURE_COSMOS_DB_URI"), os.getenv("AZURE_COSMOS_DB_KEY"))
-database_name = "rag_ai_chatbot_db"
-container_name = "knowledge_base"
-partition_key = PartitionKey(path="/id")
-cosmos_container_properties = {"partition_key": partition_key}
-cosmos_database_properties = {"id": database_name}
-indexing_policy = {
-    "indexingMode": "consistent",
-    "includedPaths": [{"path": "/*"}],
-    "excludedPaths": [{"path": '/"_etag"/?'}],
-    "vectorIndexes": [{"path": "/embedding", "type": "quantizedFlat"}],
-}
-vector_embedding_policy = {
-    "vectorEmbeddings": [
-        {
-            "path": "/embedding",
-            "dataType": "float32",
-            "distanceFunction": "cosine",
-            "dimensions": 768,
-        }
-    ]
-}
-
 # Embedding model
-google_embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+openai_embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
 
 # Connect with database
-cosmos_db = AzureCosmosDBNoSqlVectorSearch(
-    embedding=google_embeddings,
-    cosmos_client=cosmos_client,
-    database_name=database_name,
-    container_name=container_name,
-    vector_embedding_policy=vector_embedding_policy,
-    indexing_policy=indexing_policy,
-    cosmos_container_properties=cosmos_container_properties,
-    cosmos_database_properties=cosmos_database_properties,
-    create_container=True
+azure_search = AzureSearch(
+    azure_search_endpoint=os.getenv("AZURE_SEARCH_URI"),
+    azure_search_key=os.getenv("AZURE_SEARCH_KEY"),
+    index_name="main",
+    embedding_function=openai_embeddings.embed_query
 )
-
-# Get all the existing documents in the database
-all_docs = cosmos_db._container.query_items("SELECT c.id FROM c", enable_cross_partition_query=True)
 
 print("Cleaning up database...")
 
 # Clean database
-for doc in all_docs:
-    cosmos_db.delete_document_by_id(doc["id"])
+azure_search.delete()
 
 print("Database clean and ready to be updated!")
 
@@ -88,7 +54,7 @@ for root, dirs, files in os.walk('knowledge-base'):
 
             # Push to the database
             if len(file_chunks) > 0 :
-                inserted_ids = cosmos_db.add_documents(file_chunks)
+                inserted_ids = azure_search.add_documents(file_chunks)
                 print(f"Inserted {len(inserted_ids)} documents")
 
         except:

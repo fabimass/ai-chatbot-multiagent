@@ -8,9 +8,10 @@ on:
       - "knowledge-base/**"
 
 env:
-  AZURE_COSMOS_DB_URI: ${{ secrets.AZURE_COSMOS_DB_URI }}
-  AZURE_COSMOS_DB_KEY: ${{ secrets.AZURE_COSMOS_DB_KEY }}
-  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+  AZURE_SEARCH_URI: ${{ secrets.AZURE_SEARCH_URI }}
+  AZURE_SEARCH_KEY: ${{ secrets.AZURE_SEARCH_KEY }}
+  AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+  AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
 
 jobs:
   update_db:
@@ -21,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: pip install azure-cosmos==4.7.0 langchain==0.2.11 langchain-community==0.2.10 markdown==3.6 unstructured==0.14.7 langchain_google_genai==1.0.9
+        run: pip install langchain==0.2.11 langchain-community==0.2.10 markdown==3.6 unstructured==0.14.7 langchain-openai==0.1.22 azure-search-documents azure-identity
 
       - name: Run update-db script
         run: python .github/scripts/update-db.py
