@@ -56,7 +56,7 @@ jobs:
             --output json)
 
           # Prepare the new IP rule as JSON
-          new_ip_rule="{\"ipAddressOrRange\": \"${{ env.PUBLIC_IP }}\"}"
+          new_ip_rule="{\"value\": \"${{ env.PUBLIC_IP }}\"}"
 
           # Combine the new IP rule with the existing ones
           if [[ $existing_rules == "null" ]]; then
@@ -65,7 +65,11 @@ jobs:
             updated_rules=$(echo "$existing_rules" | sed 's/]/, '"$new_ip_rule"']/')
           fi
 
-          echo $updated_rules
+          # Update the Azure Search service with the new list of IP rules
+          az search service update \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name ${{ secrets.AZURE_SEARCH_SERVICE_NAME }} \
+            --set networkRuleSet.ipRules="$updated_rules"
 
       - name: Wait for 30 seconds
         run: sleep 30
