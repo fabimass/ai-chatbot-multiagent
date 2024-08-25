@@ -90,7 +90,8 @@ jobs:
           existing_rules=$(az search service show \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
             --name ${{ secrets.AZURE_SEARCH_SERVICE_NAME }} \
-            --query "networkRuleSet.ipRules" -o tsv)
+            --query "networkRuleSet.ipRules" 
+            --output json)
 
           # Remove the last IP rule (last element in the array)
           updated_rules=$(echo "$existing_rules" | sed '$d' | sed 's/,$//')
@@ -99,4 +100,4 @@ jobs:
           az search service update \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
             --name ${{ secrets.AZURE_SEARCH_SERVICE_NAME }} \
-            --set networkRuleSet.ipRules=$updated_rules
+            --set networkRuleSet.ipRules="$updated_rules"
