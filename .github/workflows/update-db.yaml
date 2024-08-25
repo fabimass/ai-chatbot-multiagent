@@ -46,7 +46,7 @@ jobs:
             --name ${{ secrets.AZURE_OPENAI_RESOURCE_NAME }} \
             --ip-address ${{ env.PUBLIC_IP }}
 
-          sleep 2000
+          sleep 60
 
       - name: Run update-db script
         run: python .github/scripts/update-db.py
