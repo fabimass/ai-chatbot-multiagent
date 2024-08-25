@@ -48,10 +48,21 @@ jobs:
 
       - name: Add IP to Azure Search whitelist
         run: |
+          # Fetch the existing IP rules
+          existing_rules=$(az search service show \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name ${{ secrets.AZURE_SEARCH_SERVICE_NAME }} \
+            --query "networkRuleSet.ipRules" \
+            --output json)
+
+          # Append the new IP to the existing rules
+          updated_rules=$(echo $existing_rules | jq --arg ip "${{ env.PUBLIC_IP }}" '. + [{"ipAddressOrRange": $ip}]')
+
+          # Update the Azure Search service with the new list of IP rules
           az search service update \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
             --name ${{ secrets.AZURE_SEARCH_SERVICE_NAME }} \
-            --ip-rules ${{ env.PUBLIC_IP }}
+            --set networkRuleSet.ipRules="$updated_rules"
 
       - name: Wait for 30 seconds
         run: sleep 30
@@ -68,7 +79,17 @@ jobs:
 
       - name: Remove IP from Azure Search whitelist
         run: |
+          # Fetch the current network rules
+          existing_rules=$(az search service show \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name ${{ secrets.AZURE_SEARCH_SERVICE_NAME }} \
+            --query "networkRuleSet.ipRules" -o tsv)
+
+          # Remove the IP from the list
+          updated_rules=$(echo "$existing_rules" | sed "/${{ env.PUBLIC_IP }}/d")
+
+          # Update the search service with the modified rules
           az search service update \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
             --name ${{ secrets.AZURE_SEARCH_SERVICE_NAME }} \
-            --remove ip-rules ${{ env.PUBLIC_IP }}
+            --set networkRuleSet.ipRules="[$updated_rules]"
