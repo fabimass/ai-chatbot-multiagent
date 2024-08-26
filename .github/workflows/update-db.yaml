@@ -90,7 +90,7 @@ jobs:
           existing_rules=$(az search service show \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
             --name ${{ secrets.AZURE_SEARCH_SERVICE_NAME }} \
-            --query "networkRuleSet.ipRules" 
+            --query "networkRuleSet.ipRules" \
             --output json)
 
           # Remove the last IP rule (last element in the array)
