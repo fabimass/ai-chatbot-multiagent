@@ -25,7 +25,7 @@ def delete_index(azure_search_endpoint, azure_search_key, index_name):
     response = requests.delete(url, headers=headers)
 
     # Check the response
-    if response.status_code == 200:
+    if response.status_code == 204:
         print("All documents deleted successfully.")
     else:
         print(f"Failed to delete documents. Status code: {response.status_code}, Response: {response.text}")
