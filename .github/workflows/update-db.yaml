@@ -94,7 +94,7 @@ jobs:
             --output json)
 
           # Remove the last IP rule (last element in the array)
-          updated_rules=$(echo "$existing_rules" | sed '$d' | sed 's/,$//')
+          updated_rules=$(echo "$existing_rules" | jq '.[0:-1]')
 
           # Update the Azure Search service with the new list of IP rules
           az search service update \
