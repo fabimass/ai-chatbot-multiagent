@@ -9,40 +9,20 @@ import nltk
 nltk.download('punkt_tab')
 nltk.download('averaged_perceptron_tagger_eng')
 
-# Embedding model
-openai_embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
-
-# Connect with database
 index_name = "main"
-azure_search = AzureSearch(
-    azure_search_endpoint=os.getenv("AZURE_SEARCH_URI"),
-    azure_search_key=os.getenv("AZURE_SEARCH_KEY"),
-    index_name=index_name,
-    embedding_function=openai_embeddings.embed_query
-)
 
 print("Cleaning up database...")
 
-def delete_all_documents_from_index(azure_search_endpoint, azure_search_key, index_name):
+def delete_index(azure_search_endpoint, azure_search_key, index_name):
     # Set up the API URL and headers
-    url = f"{azure_search_endpoint}/indexes/{index_name}/docs/index?api-version=2024-06-01"
+    url = f"{azure_search_endpoint}/indexes('{index_name}')?api-version=2024-06-01"
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {azure_search_key}"
-    }
-
-    # Create the payload to delete all documents
-    payload = {
-        "value": [
-            {
-                "@search.action": "delete",
-                "id": "*"
-            }
-        ]
+        "api-key": f"{azure_search_key}"
     }
 
     # Send the request to delete all documents
-    response = requests.post(url, headers=headers, json=payload)
+    response = requests.delete(url, headers=headers)
 
     # Check the response
     if response.status_code == 200:
@@ -51,10 +31,21 @@ def delete_all_documents_from_index(azure_search_endpoint, azure_search_key, ind
         print(f"Failed to delete documents. Status code: {response.status_code}, Response: {response.text}")
 
 # Clean database
-delete_all_documents_from_index(
+delete_index(
     azure_search_endpoint=os.getenv("AZURE_SEARCH_URI"),
     azure_search_key=os.getenv("AZURE_SEARCH_KEY"),
     index_name=index_name
+)
+
+# Embedding model
+openai_embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
+
+# Connect with database
+azure_search = AzureSearch(
+    azure_search_endpoint=os.getenv("AZURE_SEARCH_URI"),
+    azure_search_key=os.getenv("AZURE_SEARCH_KEY"),
+    index_name=index_name,
+    embedding_function=openai_embeddings.embed_query
 )
 
 # Define how the text should be split:
