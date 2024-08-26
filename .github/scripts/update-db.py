@@ -15,7 +15,7 @@ print("Cleaning up database...")
 
 def delete_index(azure_search_endpoint, azure_search_key, index_name):
     # Set up the API URL and headers
-    url = f"{azure_search_endpoint}/indexes('{index_name}')?api-version=2024-06-01"
+    url = f"{azure_search_endpoint}/indexes('{index_name}')?api-version=2023-11-01"
     headers = {
         "Content-Type": "application/json",
         "api-key": f"{azure_search_key}"
