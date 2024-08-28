@@ -1,0 +1,7 @@
+python-dotenv==1.0.1
+fastapi[standard]
+langchain==0.2.13
+langchain-community==0.2.12
+langchain-openai==0.1.22
+azure-search-documents==11.5.1
+azure-identity==1.17.1
