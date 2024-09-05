@@ -18,7 +18,7 @@ class Retriever():
 
     def invoke(self, query):
         # Run a similarity search on the database for the given query
-        docs = self.vstore.similarity_search(query, k=3)
+        docs = self.vstore.similarity_search(query['input'], k=3)
         return self.format_docs(docs)
     
     def format_docs(self, docs):
