@@ -12,6 +12,7 @@ env:
   AZURE_SEARCH_KEY: ${{ secrets.AZURE_SEARCH_KEY }}
   AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
   AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
 jobs:
   update_db:
