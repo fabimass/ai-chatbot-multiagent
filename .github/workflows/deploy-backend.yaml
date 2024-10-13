@@ -1,4 +1,4 @@
-name: Deploy Backend API
+name: Deploy Backend
 on:
   workflow_dispatch:
   push:
@@ -13,7 +13,7 @@ env:
 
 jobs:
   build-and-deploy:
-    name: 
+    name: Deploy Backend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
