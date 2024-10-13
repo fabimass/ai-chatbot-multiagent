@@ -12,7 +12,7 @@ class Retriever():
         self.vstore = AzureSearch(
             azure_search_endpoint=os.getenv("AZURE_SEARCH_URI"),
             azure_search_key=os.getenv("AZURE_SEARCH_KEY"),
-            index_name="main",
+            index_name="rag",
             embedding_function=self.embeddings.embed_query
         )
 

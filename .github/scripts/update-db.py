@@ -9,7 +9,7 @@ import nltk
 nltk.download('punkt_tab')
 nltk.download('averaged_perceptron_tagger_eng')
 
-index_name = "main"
+index_name = "rag"
 
 print("Cleaning up database...")
 
