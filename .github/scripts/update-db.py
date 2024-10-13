@@ -73,11 +73,15 @@ for root, dirs, files in os.walk('knowledge-base'):
             # Load pdf and split into chunks.
             file_chunks = data_loader.load_and_split(text_splitter=splitter)
             print(f"{file_path} splitted into {len(file_chunks)} chunks")
+        
+        except Exception as e:
+            print(f"Error splitting {file_path}: {e}")
 
+        try
             # Push to the database
             if len(file_chunks) > 0 :
                 inserted_ids = azure_search.add_documents(file_chunks)
                 print(f"Inserted {len(inserted_ids)} documents")
 
-        except:
-            print(f"Error splitting {file_path}")
+        except Exception as e:
+            print(f"Error pushing {file_path} chunks to the database: {e}")
