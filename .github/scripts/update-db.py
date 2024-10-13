@@ -1,6 +1,7 @@
 import os
 import requests
 from langchain_openai import AzureOpenAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores.azuresearch import AzureSearch
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import UnstructuredMarkdownLoader, PyPDFLoader
