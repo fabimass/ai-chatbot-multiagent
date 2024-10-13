@@ -22,7 +22,7 @@ class Prompt(BaseModel):
 
 # This endpoint returns the user prompt, for testing purposes
 @app.get("/api/ping")
-def echo():
+def ping():
     return "pong"
 
 # This endpoint receives a prompt and generates a response
