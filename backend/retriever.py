@@ -1,12 +1,14 @@
 import os
 from langchain_community.vectorstores.azuresearch import AzureSearch
 from langchain_openai import AzureOpenAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 class Retriever():
 
     def __init__(self):
         # Embeddings model instantiation
-        self.embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
+        #self.embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
+        self.embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
 
         # Vector store instantiation
         self.vstore = AzureSearch(
