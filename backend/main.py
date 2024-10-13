@@ -21,9 +21,9 @@ class Prompt(BaseModel):
     prompt: str
 
 # This endpoint returns the user prompt, for testing purposes
-@app.post("/api/echo")
-def echo(body: Prompt):
-    return {"echo": body.prompt}
+@app.get("/api/ping")
+def echo():
+    return "pong"
 
 # This endpoint receives a prompt and generates a response
 @app.post("/api/ask")
