@@ -77,7 +77,7 @@ for root, dirs, files in os.walk('knowledge-base'):
         except Exception as e:
             print(f"Error splitting {file_path}: {e}")
 
-        try
+        try:
             # Push to the database
             if len(file_chunks) > 0 :
                 inserted_ids = azure_search.add_documents(file_chunks)
