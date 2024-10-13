@@ -38,14 +38,15 @@ delete_index(
 )
 
 # Embedding model
-openai_embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
+#embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
+embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
 
 # Connect with database
 azure_search = AzureSearch(
     azure_search_endpoint=os.getenv("AZURE_SEARCH_URI"),
     azure_search_key=os.getenv("AZURE_SEARCH_KEY"),
     index_name=index_name,
-    embedding_function=openai_embeddings.embed_query
+    embedding_function=embeddings.embed_query
 )
 
 # Define how the text should be split:
