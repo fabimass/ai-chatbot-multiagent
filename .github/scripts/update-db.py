@@ -10,7 +10,7 @@ import nltk
 nltk.download('punkt_tab')
 nltk.download('averaged_perceptron_tagger_eng')
 
-index_name = "rag"
+index_name = os.getenv("DB_INDEX")
 
 print("Cleaning up database...")
 
@@ -38,9 +38,13 @@ delete_index(
     index_name=index_name
 )
 
-# Embedding model
-#embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
-embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+# Embeddings model
+if os.getenv("EMBEDDINGS_MODEL") == "openai":
+    embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
+elif os.getenv("EMBEDDINGS_MODEL") == "google":    
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+else:
+    embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
 
 # Connect with database
 azure_search = AzureSearch(

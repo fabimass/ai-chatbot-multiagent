@@ -7,14 +7,18 @@ class Retriever():
 
     def __init__(self):
         # Embeddings model instantiation
-        #self.embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
-        self.embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        if os.getenv("EMBEDDINGS_MODEL") == "openai":
+            self.embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
+        elif os.getenv("EMBEDDINGS_MODEL") == "google":    
+            self.embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        else:
+            self.embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
 
         # Vector store instantiation
         self.vstore = AzureSearch(
             azure_search_endpoint=os.getenv("AZURE_SEARCH_URI"),
             azure_search_key=os.getenv("AZURE_SEARCH_KEY"),
-            index_name="rag",
+            index_name=os.getenv("DB_INDEX"),
             embedding_function=self.embeddings.embed_query
         )
 

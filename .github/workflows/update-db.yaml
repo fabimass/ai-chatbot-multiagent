@@ -13,6 +13,8 @@ env:
   AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
   AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
   GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+  DB_INDEX: ${{ vars.DB_INDEX }}
+  EMBEDDINGS_MODEL: ${{ vars.EMBEDDINGS_MODEL }}
 
 jobs:
   update_db:
