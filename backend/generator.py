@@ -14,8 +14,10 @@ class Generator():
 
         # The system prompt guides the model on how to respond
         self.system_prompt = (
-            "You are an AI assistant that answers questions based on a set of documents related to Fabian's final project for his master degree in AI."
-            "Use the following pieces of retrieved context to answer the question." 
+            "You are an AI assistant for question-answering tasks."
+            "You are able to answer questions related to Fabian's final project for his master degree in AI."
+            "If someone asks, 'What can I ask you about?' or other similar questions, respond with the above topics."
+            "If you're unsure, use the following pieces of retrieved context to answer the question." 
             "If you don't know the answer, say that you don't know." 
             "Use three sentences maximum and keep the answer concise."
             "\n\n"
