@@ -64,9 +64,7 @@ azure_search = AzureSearch(
 #  - Each chunk should be up to 512 characters long.
 #  - There should be an overlap of 64 characters between consecutive chunks. 
 #  - This overlap helps maintain context across the chunks.
-print(os.getenv('CHUNK_SIZE', 512))
-print(os.getenv('CHUNK_OVERLAP', 64))
-splitter = RecursiveCharacterTextSplitter(chunk_size=os.getenv('CHUNK_SIZE', 512), chunk_overlap=os.getenv('CHUNK_OVERLAP', 64))
+splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=64)
 
 documents = []
 
