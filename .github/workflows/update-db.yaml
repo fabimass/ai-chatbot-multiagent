@@ -15,6 +15,8 @@ env:
   GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
   DB_INDEX: ${{ vars.DB_INDEX }}
   EMBEDDINGS_MODEL: ${{ vars.EMBEDDINGS_MODEL }}
+  CHUNK_SIZE: ${{ vars.CHUNK_SIZE }}
+  CHUNK_OVERLAP: ${{ vars.CHUNK_OVERLAP }}
 
 jobs:
   update_db:
