@@ -31,6 +31,12 @@ def delete_index(azure_search_endpoint, azure_search_key, index_name):
     else:
         print(f"Failed to delete documents. Status code: {response.status_code}, Response: {response.text}")
 
+
+def split_into_batches(lst, batch_size):
+    for i in range(0, len(lst), batch_size):
+        yield lst[i:i + batch_size]
+
+
 # Clean database
 delete_index(
     azure_search_endpoint=os.getenv("AZURE_SEARCH_URI"),
@@ -58,6 +64,8 @@ azure_search = AzureSearch(
 #  - Each chunk should be up to 512 characters long.
 #  - There should be an overlap of 64 characters between consecutive chunks. 
 #  - This overlap helps maintain context across the chunks.
+print(os.getenv('CHUNK_SIZE', 512))
+print(os.getenv('CHUNK_OVERLAP', 64))
 splitter = RecursiveCharacterTextSplitter(chunk_size=os.getenv('CHUNK_SIZE', 512), chunk_overlap=os.getenv('CHUNK_OVERLAP', 64))
 
 documents = []
@@ -81,13 +89,15 @@ for root, dirs, files in os.walk('knowledge-base'):
             print(f"{file_path} splitted into {len(file_chunks)} chunks")
         
         except Exception as e:
-            print(f"Error splitting {file_path}: {e}")
+            raise ValueError(f"Error splitting {file_path}: {e}")
 
         try:
             # Push to the database
-            if len(file_chunks) > 0 :
-                inserted_ids = azure_search.add_documents(file_chunks)
-                print(f"Inserted {len(inserted_ids)} documents")
+            #if len(file_chunks) > 0 :
+            #    # Split file_chunks into batches and upload each batch
+            #    for batch in split_into_batches(file_chunks, batch_size=5):
+            #        inserted_ids = azure_search.add_documents(batch)
+            #    print(f"Inserted {len(inserted_ids)} documents")
 
         except Exception as e:
-            print(f"Error pushing {file_path} chunks to the database: {e}")
+            raise ValueError(f"Error pushing {file_path} chunks to the database: {e}")
