@@ -94,9 +94,9 @@ for root, dirs, files in os.walk('knowledge-base'):
             # Push to the database
             if len(file_chunks) > 0 :
                 # Split file_chunks into batches and upload each batch
-                for batch in split_into_batches(file_chunks, batch_size=5):
-                    inserted_ids = azure_search.add_documents(batch)
-                    time.sleep(5)
+                #for batch in split_into_batches(file_chunks, batch_size=5):
+                inserted_ids = azure_search.add_documents(batch)
+                    #time.sleep(5)
 
                 print(f"Inserted {len(inserted_ids)} documents")
 
