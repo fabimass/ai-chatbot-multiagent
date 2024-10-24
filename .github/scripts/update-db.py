@@ -33,11 +33,6 @@ def delete_index(azure_search_endpoint, azure_search_key, index_name):
         print(f"Failed to delete documents. Status code: {response.status_code}, Response: {response.text}")
 
 
-def split_into_batches(lst, batch_size):
-    for i in range(0, len(lst), batch_size):
-        yield lst[i:i + batch_size]
-
-
 # Clean database
 delete_index(
     azure_search_endpoint=os.getenv("AZURE_SEARCH_URI"),
@@ -93,11 +88,7 @@ for root, dirs, files in os.walk('knowledge-base'):
         try:
             # Push to the database
             if len(file_chunks) > 0 :
-                # Split file_chunks into batches and upload each batch
-                #for batch in split_into_batches(file_chunks, batch_size=5):
                 inserted_ids = azure_search.add_documents(file_chunks)
-                    #time.sleep(5)
-
                 print(f"Inserted {len(inserted_ids)} documents")
 
         except Exception as e:
