@@ -80,7 +80,7 @@ jobs:
         run: sleep 30
 
       - name: Run update-db script
-        run: python .github/scripts/update-db.py
+        run: python -u .github/scripts/update-db.py
 
       - name: Remove IP from Azure OpenAI whitelist
         run: |
