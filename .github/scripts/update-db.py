@@ -13,8 +13,7 @@ nltk.download('averaged_perceptron_tagger_eng')
 
 index_name = os.getenv("DB_INDEX")
 
-print("Cleaning up database...")
-
+# Function to delete all the documents in a given index
 def delete_index(azure_search_endpoint, azure_search_key, index_name):
     # Set up the API URL and headers
     url = f"{azure_search_endpoint}/indexes('{index_name}')?api-version=2023-11-01"
@@ -33,7 +32,28 @@ def delete_index(azure_search_endpoint, azure_search_key, index_name):
         print(f"Failed to delete documents. Status code: {response.status_code}, Response: {response.text}")
 
 
+# Function to implement batch processing with delays
+#   After splitting the document into chunks, 
+#   we process and push them in smaller batches, 
+#   adding a delay between each batch. 
+#   This prevents hitting the rate limit by spreading requests over time.
+def batch_insert_chunks(chunks, batch_size=5, delay_between_batches=3):
+    batch_count=0
+    inserted_ids = []
+    for i in range(0, len(chunks), batch_size):
+        batch = chunks[i:i+batch_size]
+        batch_count += 1
+        try:
+            inserted_ids_batch = azure_search.add_documents(batch)
+            inserted_ids.extend(inserted_ids_batch)
+            print(f"Inserted batch #{batch_count} ({len(inserted_ids_batch)} documents)")
+        except Exception as e:
+            print(f"Error pushing batch #{batch_count} to the database: {e}")
+        time.sleep(delay_between_batches)
+    return inserted_ids
+
 # Clean database
+print("Cleaning up database...")
 delete_index(
     azure_search_endpoint=os.getenv("AZURE_SEARCH_URI"),
     azure_search_key=os.getenv("AZURE_SEARCH_KEY"),
@@ -89,6 +109,7 @@ for root, dirs, files in os.walk('knowledge-base'):
             # Push to the database
             if len(file_chunks) > 0 :
                 inserted_ids = azure_search.add_documents(file_chunks)
+                inserted_ids = batch_insert_chunks(file_chunks)
                 print(f"Inserted {len(inserted_ids)} documents")
 
         except Exception as e:
