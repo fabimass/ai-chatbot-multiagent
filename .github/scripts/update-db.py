@@ -100,5 +100,5 @@ for root, dirs, files in os.walk('knowledge-base'):
         
         # Push to the database
         if len(file_chunks) > 0 :
-            inserted_ids = batch_insert_chunks(file_chunks, batch_size=3, delay_between_batches=5)
+            inserted_ids = batch_insert_chunks(file_chunks, batch_size=3, delay_between_batches=10)
             print(f"Inserted {len(inserted_ids)} documents")    
