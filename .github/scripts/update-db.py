@@ -43,12 +43,9 @@ def batch_insert_chunks(chunks, batch_size=5, delay_between_batches=3):
     for i in range(0, len(chunks), batch_size):
         batch = chunks[i:i+batch_size]
         batch_count += 1
-        try:
-            inserted_ids_batch = azure_search.add_documents(batch)
-            inserted_ids.extend(inserted_ids_batch)
-            print(f"Inserted batch #{batch_count} ({len(inserted_ids_batch)} documents)")
-        except Exception as e:
-            print(f"Error pushing batch #{batch_count} to the database: {e}")
+        inserted_ids_batch = azure_search.add_documents(batch)
+        inserted_ids.extend(inserted_ids_batch)
+        print(f"Inserted batch #{batch_count} ({len(inserted_ids_batch)} documents)")
         time.sleep(delay_between_batches)
     return inserted_ids
 
@@ -96,20 +93,12 @@ for root, dirs, files in os.walk('knowledge-base'):
             data_loader = PyPDFLoader(file_path)
         elif file.endswith('.md'):
             data_loader = UnstructuredMarkdownLoader(file_path)
+           
+        # Load pdf and split into chunks.
+        file_chunks = data_loader.load_and_split(text_splitter=splitter)
+        print(f"{file_path} splitted into {len(file_chunks)} chunks")
         
-        try:
-            # Load pdf and split into chunks.
-            file_chunks = data_loader.load_and_split(text_splitter=splitter)
-            print(f"{file_path} splitted into {len(file_chunks)} chunks")
-        
-        except Exception as e:
-            raise ValueError(f"Error splitting {file_path}: {e}")
-
-        try:
-            # Push to the database
-            if len(file_chunks) > 0 :
-                inserted_ids = batch_insert_chunks(file_chunks, batch_size=3, delay_between_batches=5)
-                print(f"Inserted {len(inserted_ids)} documents")
-
-        except Exception as e:
-            raise ValueError(f"Error pushing {file_path} chunks to the database: {e}")
+        # Push to the database
+        if len(file_chunks) > 0 :
+            inserted_ids = batch_insert_chunks(file_chunks, batch_size=3, delay_between_batches=5)
+            print(f"Inserted {len(inserted_ids)} documents")    
