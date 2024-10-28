@@ -1,11 +1,3 @@
-import { Link } from "@nextui-org/link";
-import { Snippet } from "@nextui-org/snippet";
-import { Code } from "@nextui-org/code";
-import { button as buttonStyles } from "@nextui-org/theme";
-
-import { siteConfig } from "@/config/site";
-import { title, subtitle } from "@/components/primitives";
-import { GithubIcon } from "@/components/icons";
 import DefaultLayout from "@/layouts/default";
 import { Card, CardHeader, CardBody, CardFooter, Input, Button } from '@nextui-org/react';
 import { useState } from 'react';
@@ -30,9 +22,10 @@ export default function IndexPage() {
         <h3>Fabi</h3>
       </CardHeader>
       <CardBody style={{ height: '300px', overflowY: 'scroll' }}>
-        {messages.map((msg, index) => (
-          <div>fabi</div>
-        ))}
+        {messages.map((msg, index) => {
+          console.log(msg, index)
+          return <div>fabi</div>}
+        )}
       </CardBody>
       <CardFooter>
         <Input
