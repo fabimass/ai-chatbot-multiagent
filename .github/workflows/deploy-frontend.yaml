@@ -6,7 +6,7 @@ on:
       - "frontend/**"
 
 env:
-  WORKING_DIRECTORY: 'backend'
+  WORKING_DIRECTORY: 'frontend'
   NODE_VERSION: '20'            
 
 jobs:
