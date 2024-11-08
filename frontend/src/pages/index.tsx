@@ -1,26 +1,24 @@
 import DefaultLayout from "@/layouts/default";
 import { ChatInput } from "@/components/ChatInput";
-import { ChatHistory } from "@/components/ChatHistory";
+import { ChatHistory, ChatHistoryProps } from "@/components/ChatHistory";
 import { useState } from "react";
 
 export default function IndexPage() {
-  const [messages, setMessages] = useState([
-    { text: "Hello! How can I assist you today?", sender: "bot" },
-  ]);
-  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<ChatHistoryProps["messages"]>([]);
 
-  const handleSendMessage = () => {
-    if (input.trim()) {
-      setMessages([...messages, { text: input, sender: "user" }]);
-      setInput("");
-    }
+  const handleSendMessage = (msg: string) => {
+    setMessages((history) => [...history, { text: msg, sender: "human" }]);
+    console.log("call the api with: ", msg);
+    setMessages((history) => [
+      ...history,
+      { text: "some response...", sender: "bot" },
+    ]);
   };
 
   return (
     <DefaultLayout>
       <ChatHistory messages={messages} />
-
-      <ChatInput onSend={(newQuestion) => console.log(newQuestion)} />
+      <ChatInput onSend={(newQuestion) => handleSendMessage(newQuestion)} />
     </DefaultLayout>
   );
 }
