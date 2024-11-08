@@ -1,5 +1,7 @@
 import { MessageBox } from "react-chat-elements";
 import "react-chat-elements/dist/main.css";
+import { ScrollShadow } from "@nextui-org/react";
+import { useRef, useEffect } from "react";
 
 export interface ChatHistoryProps {
   messages: {
@@ -9,9 +11,18 @@ export interface ChatHistoryProps {
 }
 
 export const ChatHistory = ({ messages }: ChatHistoryProps) => {
+  const scrollbarsRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (scrollbarsRef.current) {
+      // Scroll to the bottom whenever the messages change
+      scrollbarsRef.current.scrollTop = scrollbarsRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   return (
     <>
-      <div className="flex-grow">
+      <ScrollShadow className="flex-grow" hideScrollBar ref={scrollbarsRef}>
         {messages.map((msg) => (
           // @ts-ignore
           <MessageBox
@@ -21,7 +32,7 @@ export const ChatHistory = ({ messages }: ChatHistoryProps) => {
             text={msg.text}
           />
         ))}
-      </div>
+      </ScrollShadow>
     </>
   );
 };
