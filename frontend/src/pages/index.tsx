@@ -17,7 +17,7 @@ export default function IndexPage() {
 
   return (
     <DefaultLayout>
-      <div className="flex flex-col flex-grow h-full min-h-0">
+      <div className="flex flex-col h-full min-h-0">
         <ChatHistory messages={messages} />
         <ChatInput onSend={(newQuestion) => handleSendMessage(newQuestion)} />
       </div>

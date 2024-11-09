@@ -19,7 +19,11 @@ export const ChatHistory = ({ messages }: ChatHistoryProps) => {
 
   return (
     <>
-      <ScrollShadow className="flex-grow" hideScrollBar ref={scrollbarsRef}>
+      <ScrollShadow
+        className="flex-grow px-[25%]"
+        hideScrollBar
+        ref={scrollbarsRef}
+      >
         {messages.map((msg) => (
           <ChatMessage text={msg.text} sender={msg.sender} />
         ))}
