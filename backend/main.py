@@ -11,10 +11,10 @@ from azure.data.tables import TableServiceClient, TableEntity
 load_dotenv()
 
 # The retriever will handle the connection with the database and retrieve the context given a query
-#retriever = Retriever()
+retriever = Retriever()
 
 # The generator produces an answer using a prompt that includes the question and the retrieved data
-#generator = Generator(retriever)
+generator = Generator(retriever)
 
 # Entry point to use FastAPI
 app = FastAPI()
@@ -40,10 +40,13 @@ def ping():
     return "pong"
 
 # This endpoint receives a prompt and generates a response
-#@app.post("/api/ask")
-#def generate_answer(body: Prompt):
-#    answer = generator.invoke(body.prompt)
-#    return {"question": body.prompt, "answer": answer}
+@app.post("/api/ask")
+def generate_answer(body: Prompt):
+    try:
+        answer = generator.invoke(body.prompt)
+        return {"question": body.prompt, "answer": answer}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
 
 # This endpoint receives feedback from the user
 @app.post("/api/feedback")
@@ -60,7 +63,7 @@ async def store_feedback(feedback: Feedback):
         table_client.create_entity(entity=entity)
         return {"message": "Feedback stored successfully."}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error storing feedback: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
 
 # This endpoint returns the number of likes and hates
 @app.get("/api/feedback")
@@ -74,4 +77,4 @@ async def get_feedback_count():
 
         return {"likes": likes_count, "hates": hates_count}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving counts: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
