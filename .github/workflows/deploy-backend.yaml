@@ -6,10 +6,10 @@ on:
       - "backend/**"
 
 env:
-  AZURE_WEBAPP_NAME: 'chatwithfabi-dev-backend'    
-  WORKING_DIRECTORY: 'backend'        
-  PYTHON_VERSION: '3.10'        
-  STARTUP_COMMAND: 'gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app'           
+  AZURE_WEBAPP_NAME: "chatwithfabi-dev-backend"
+  WORKING_DIRECTORY: "backend"
+  PYTHON_VERSION: "3.10"
+  STARTUP_COMMAND: "gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app"
 
 jobs:
   build-and-deploy:
@@ -23,7 +23,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      
+
       - name: Install dependencies
         working-directory: ${{ env.WORKING_DIRECTORY }}
         run: |
@@ -31,6 +31,10 @@ jobs:
           source antenv/bin/activate
           pip install setuptools
           pip install -r requirements.txt
+
+      - name: Run tests
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: pytest
 
       - name: Login to Azure
         uses: azure/login@v1
@@ -42,7 +46,7 @@ jobs:
               "tenantId": "${{ secrets.AZURE_TENANT_ID }}",
               "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
             }
-      
+
       - name: Deploy to Azure
         uses: azure/webapps-deploy@v3
         with:
