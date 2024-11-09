@@ -1,5 +1,4 @@
 import { ChatMessage, ChatMessageProps } from "./ChatMessage";
-import "react-chat-elements/dist/main.css";
 import { ScrollShadow } from "@nextui-org/react";
 import { useRef, useEffect } from "react";
 
@@ -24,8 +23,8 @@ export const ChatHistory = ({ messages }: ChatHistoryProps) => {
         hideScrollBar
         ref={scrollbarsRef}
       >
-        {messages.map((msg) => (
-          <ChatMessage text={msg.text} sender={msg.sender} />
+        {messages.map((msg, idx) => (
+          <ChatMessage text={msg.text} sender={msg.sender} key={idx} />
         ))}
       </ScrollShadow>
     </>
