@@ -7,3 +7,4 @@ azure-search-documents==11.5.1
 azure-identity==1.17.1
 langchain-google-genai==1.0.10
 uvicorn[standard]
+azure-data-tables==12.5.0
