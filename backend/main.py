@@ -47,7 +47,7 @@ def ping():
 
 # This endpoint receives feedback from the user
 @app.post("/api/feedback")
-async def receive_feedback(feedback: Feedback):
+async def store_feedback(feedback: Feedback):
     # Create a unique identifier for each feedback entry
     entity = TableEntity()
     entity["PartitionKey"] = "likes" if feedback.like else "hates"
@@ -61,3 +61,17 @@ async def receive_feedback(feedback: Feedback):
         return {"message": "Feedback stored successfully."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error storing feedback: {e}")
+
+# This endpoint returns the number of likes and hates
+@app.get("/api/feedback")
+async def get_feedback_count():
+    try:
+        # Query for "likes" entries
+        likes_count = len(list(table_client.query_entities(query_filter="PartitionKey eq 'likes'")))
+        
+        # Query for "hates" entries
+        hates_count = len(list(table_client.query_entities(query_filter="PartitionKey eq 'hates'")))
+
+        return {"likes": likes_count, "hates": hates_count}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving counts: {e}")
