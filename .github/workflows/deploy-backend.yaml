@@ -34,7 +34,9 @@ jobs:
 
       - name: Run tests
         working-directory: ${{ env.WORKING_DIRECTORY }}
-        run: pytest
+        run: |
+          source antenv/bin/activate
+          pytest --disable-warnings
 
       - name: Login to Azure
         uses: azure/login@v1
