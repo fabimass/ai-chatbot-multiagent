@@ -1,13 +1,10 @@
-import { MessageBox } from "react-chat-elements";
+import { ChatMessage, ChatMessageProps } from "./ChatMessage";
 import "react-chat-elements/dist/main.css";
 import { ScrollShadow } from "@nextui-org/react";
 import { useRef, useEffect } from "react";
 
 export interface ChatHistoryProps {
-  messages: {
-    text: string;
-    sender: string;
-  }[];
+  messages: ChatMessageProps[];
 }
 
 export const ChatHistory = ({ messages }: ChatHistoryProps) => {
@@ -24,13 +21,7 @@ export const ChatHistory = ({ messages }: ChatHistoryProps) => {
     <>
       <ScrollShadow className="flex-grow" hideScrollBar ref={scrollbarsRef}>
         {messages.map((msg) => (
-          // @ts-ignore
-          <MessageBox
-            position={msg.sender === "human" ? "right" : "left"}
-            type="text"
-            title={msg.sender}
-            text={msg.text}
-          />
+          <ChatMessage text={msg.text} sender={msg.sender} />
         ))}
       </ScrollShadow>
     </>
