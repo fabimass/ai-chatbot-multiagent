@@ -6,8 +6,8 @@ on:
       - "frontend/**"
 
 env:
-  WORKING_DIRECTORY: 'frontend'
-  NODE_VERSION: '20'            
+  WORKING_DIRECTORY: "frontend"
+  NODE_VERSION: "20"
 
 jobs:
   build-and-deploy:
@@ -21,15 +21,19 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
+
       - name: Install dependencies
         working-directory: ${{ env.WORKING_DIRECTORY }}
         run: npm install
 
+      - name: Run tests
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm test
+
       - name: Build the project
         working-directory: ${{ env.WORKING_DIRECTORY }}
         run: npm run build
-      
+
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
