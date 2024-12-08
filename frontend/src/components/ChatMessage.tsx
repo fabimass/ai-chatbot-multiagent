@@ -5,17 +5,38 @@ import { useState, useEffect } from "react";
 export interface ChatMessageProps {
   text: string;
   sender: string;
+  previous?: string;
 }
 
-export const ChatMessage = ({ text, sender }: ChatMessageProps) => {
+export const ChatMessage = ({ text, sender, previous }: ChatMessageProps) => {
   const [liked, setLiked] = useState<boolean | null>(null); // Tracks if the message was liked or disliked
   const [animating, setAnimating] = useState(false); // Controls animation on click
   const [showIcons, setShowIcons] = useState(true); // Controls visibility of icons
+
+  const sendFeedback = (sentiment: boolean) => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/feedback`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        question: previous,
+        answer: text,
+        like: sentiment,
+      }),
+    })
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => console.error(error));
+  };
 
   const handleThumbsUp = () => {
     if (liked !== true) {
       setAnimating(true);
       setLiked(true);
+      sendFeedback(true);
     }
   };
 
@@ -23,6 +44,7 @@ export const ChatMessage = ({ text, sender }: ChatMessageProps) => {
     if (liked !== false) {
       setAnimating(true);
       setLiked(false);
+      sendFeedback(false);
     }
   };
 

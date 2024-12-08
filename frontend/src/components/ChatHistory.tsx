@@ -24,7 +24,12 @@ export const ChatHistory = ({ messages }: ChatHistoryProps) => {
         ref={scrollbarsRef}
       >
         {messages.map((msg, idx) => (
-          <ChatMessage text={msg.text} sender={msg.sender} key={idx} />
+          <ChatMessage
+            text={msg.text}
+            sender={msg.sender}
+            key={idx}
+            previous={msg.sender == "bot" ? messages[idx - 1].text : undefined}
+          />
         ))}
       </ScrollShadow>
     </>
