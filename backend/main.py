@@ -1,3 +1,4 @@
+from http.client import HTTPException
 import os
 import uuid
 from fastapi import FastAPI
@@ -19,6 +20,8 @@ generator = Generator(retriever)
 # Entry point to use FastAPI
 app = FastAPI()
 
+sessions = {}
+
 # Set up the connection to Azure Table Storage
 table_connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 table_name = "FeedbackTable"
@@ -26,12 +29,14 @@ table_service = TableServiceClient.from_connection_string(conn_str=table_connect
 table_client = table_service.get_table_client(table_name)
 
 # Define body model for the http requests
-class Prompt(BaseModel):
-    prompt: str
-
-class Feedback(BaseModel):
+class Question(BaseModel):
     question: str
+    session_id: str
+
+class Answer(Question):
     answer: str
+
+class Feedback(Answer):
     like: bool
 
 # This endpoint returns the user prompt, for testing purposes
@@ -41,22 +46,29 @@ def ping():
 
 # This endpoint receives a prompt and generates a response
 @app.post("/api/ask")
-def generate_answer(body: Prompt):
+def generate_answer(body: Question):
+    session_id = body.session_id
+    prompt = body.question
+
+    # Retrieve conversation history or start a new one
+    session_history = get_chat_history(session_id)
+
     try:
-        answer = generator.invoke(body.prompt)
-        return {"question": body.prompt, "answer": answer}
+        answer = generator.invoke(prompt, session_history)
+        add_to_chat_history(Answer(**{"question": prompt, "answer": answer, "session_id": session_id}))
+        return {"question": prompt, "answer": answer}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
 # This endpoint receives feedback from the user
 @app.post("/api/feedback")
-async def store_feedback(feedback: Feedback):
+async def store_feedback(body: Feedback):
     # Create a unique identifier for each feedback entry
     entity = TableEntity()
-    entity["PartitionKey"] = "likes" if feedback.like else "hates"
+    entity["PartitionKey"] = "likes" if body.like else "hates"
     entity["RowKey"] = str(uuid.uuid4())
-    entity["Question"] = feedback.question
-    entity["Answer"] = feedback.answer
+    entity["Question"] = body.question
+    entity["Answer"] = body.answer
 
     # Insert the entity into the Azure Table
     try:
@@ -78,3 +90,24 @@ async def get_feedback_count():
         return {"likes": likes_count, "hates": hates_count}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
+    
+# This endpoint returns the chat history for a given session id
+@app.get("/api/history/{session_id}")
+def get_chat_history(session_id):
+    session_history = sessions.get(session_id, [])
+    return session_history
+
+# This endpoint adds a new chat to the chat history for a given session id
+@app.post("/api/history")
+def add_to_chat_history(body: Answer):
+    session_history = get_chat_history(body.session_id)
+    session_history.append({"role": "user", "content": body.question})
+    session_history.append({"role": "bot", "content": body.answer})
+    sessions[body.session_id] = session_history
+    return {"message": "Chat history updated successfully."}
+
+# This endpoint deletes the chat history for a given session id
+@app.delete("/api/history/{session_id}")
+def delete_chat_history(session_id):
+    sessions[session_id] = []
+    return {"message": "Chat history deleted successfully."}
