@@ -8,11 +8,26 @@ export default function IndexPage() {
 
   const handleSendMessage = (msg: string) => {
     setMessages((history) => [...history, { text: msg, sender: "human" }]);
-    console.log("call the api with: ", msg);
-    setMessages((history) => [
-      ...history,
-      { text: "some response...", sender: "bot" },
-    ]);
+    console.log("human message: ", msg);
+
+    fetch(`${import.meta.env.VITE_API_URL}/api/ask`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        prompt: msg,
+      }),
+    })
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        setMessages((history) => [
+          ...history,
+          { text: result["answer"], sender: "bot" },
+        ]);
+      })
+      .catch((error) => console.error(error));
   };
 
   return (

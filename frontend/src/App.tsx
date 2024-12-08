@@ -6,7 +6,6 @@ function App() {
   return (
     <Routes>
       <Route element={<IndexPage />} path="/" />
-
     </Routes>
   );
 }
