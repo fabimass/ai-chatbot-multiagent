@@ -38,6 +38,7 @@ class Answer(Question):
 
 class Feedback(Answer):
     like: bool
+    session_id: None = None
 
 # This endpoint returns the user prompt, for testing purposes
 @app.get("/api/ping")
