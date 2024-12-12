@@ -95,7 +95,8 @@ async def get_feedback_count():
 # This endpoint returns the chat history for a given session id
 @app.get("/api/history/{session_id}")
 def get_chat_history(session_id):
-    session_history = sessions.get(session_id, [])
+    # Return the latest 2 question-answer pairs
+    session_history = sessions.get(session_id, [])[-4:]
     return session_history
 
 # This endpoint adds a new chat to the chat history for a given session id
