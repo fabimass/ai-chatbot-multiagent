@@ -6,6 +6,11 @@ import { useState } from "react";
 export default function IndexPage() {
   const [messages, setMessages] = useState<ChatHistoryProps["messages"]>([]);
 
+  // Generate a unique session_id for the user
+  const sessionId =
+    localStorage.getItem("chatbot_session_id") || crypto.randomUUID();
+  localStorage.setItem("chatbot_session_id", sessionId);
+
   const handleSendMessage = (msg: string) => {
     setMessages((history) => [...history, { text: msg, sender: "human" }]);
     console.log("human message: ", msg);
@@ -16,7 +21,8 @@ export default function IndexPage() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        prompt: msg,
+        question: msg,
+        session_id: sessionId,
       }),
     })
       .then((response) => response.json())
