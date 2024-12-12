@@ -13,7 +13,7 @@ def mock_retriever():
 @patch("generator.AzureChatOpenAI")
 @patch("generator.ChatPromptTemplate")
 @patch("generator.StrOutputParser")
-@patch("generator.RunnablePassthrough")
+@patch("generator.RunnableLambda")
 def generator_with_mocks(mock_runnable, mock_parser, mock_prompt_template, mock_azure_chat, mock_retriever):
     # Set up mocks for each of the LLM, prompt template, parser, and passthrough
     mock_prompt_template.from_messages.return_value = mock_prompt_template
@@ -38,15 +38,16 @@ def test_generator_invoke(generator_with_mocks, mock_retriever):
     # Given a user question, test if invoke calls the chain and returns the expected answer
     generator = generator_with_mocks
     user_question = "What is the final project about?"
+    chat_history = []
     
     # Mock the rag_chain's invoke method to return a simulated response
     generator.rag_chain.invoke = MagicMock(return_value="Mocked LLM response")
     
     # Call invoke with the user question
-    response = generator.invoke(user_question)
+    response = generator.invoke(user_question, chat_history)
     
     # Check that the invoke method in rag_chain was called with the correct input
-    generator.rag_chain.invoke.assert_called_once_with({"input": user_question})
+    generator.rag_chain.invoke.assert_called_once_with({"input": user_question, 'history': ""})
     
     # Verify the output
     assert response == "Mocked LLM response"
