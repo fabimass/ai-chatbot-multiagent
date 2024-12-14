@@ -216,3 +216,42 @@ This document details the experimentation stages, improvements, and observations
 - **Answer**: "Esta pregunta cae fuera de mi base de conocimientos."
 
   ![](images/result_4_2.png)
+
+---
+
+### Stage 5: Chatbot memory
+
+**Issue Identified**: 
+
+> The chatbot doesn't have memory and thus it cannot answer regarding previous questions.
+
+  ![](images/result_5_1.png)
+
+  ![](images/result_5_2.png)
+
+**Objective**: Store previous chats and provide them to the LLM when asking for a response.
+
+**Setup**:
+- **System Prompt**:
+```
+"You are an AI assistant for question-answering tasks."
+"You are able to answer questions related to Fabian's final project for his master degree in AI."
+"If someone asks, 'What can I ask you about?' or other similar questions, respond with the above topics."
+"If you're unsure, use the following pieces of retrieved context to answer the question." 
+"If you don't know the answer, say that you don't know."
+"If a question does not relate to Fabian's project, respond with: 'This question falls outside of my knowledge base'." 
+"Use three sentences maximum and keep the answer concise."
+"\n\n"
+"Context: {context}"
+"\n\n"
+"History: {history}"
+```
+- Implemented logic to provide the latest 2 question-answer pairs for the current user.
+
+**Results**: 
+
+> Adjusting the logic successfully empowers the chatbot to use previous questions and answers along with the context.
+
+  ![](images/result_5_3.png)
+
+  ![](images/result_5_4.png)
