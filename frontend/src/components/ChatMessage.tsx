@@ -23,6 +23,7 @@ export const ChatMessage = ({ text, sender, previous }: ChatMessageProps) => {
         question: previous,
         answer: text,
         like: sentiment,
+        session_id: localStorage.getItem("chatbot_session_id"),
       }),
     })
       .then((response) => response.json())
