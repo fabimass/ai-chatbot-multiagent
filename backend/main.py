@@ -1,5 +1,4 @@
 from http.client import HTTPException
-import uuid
 from fastapi import FastAPI
 from dotenv import load_dotenv
 from retriever import Retriever
