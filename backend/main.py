@@ -1,9 +1,10 @@
 from http.client import HTTPException
+import uuid
 from fastapi import FastAPI
 from dotenv import load_dotenv
-from retriever import Retriever
-from generator import Generator
-from utils import Question, Answer, Feedback, get_table_client
+from modules.retriever import Retriever
+from modules.generator import Generator
+from modules.utils import Question, Answer, Feedback, get_table_client
 from azure.data.tables import TableEntity
 
 # Load environment variables
@@ -48,9 +49,10 @@ def generate_answer(body: Question):
 async def store_feedback(body: Feedback):
     entity = TableEntity()
     entity["PartitionKey"] = "likes" if body.like else "hates"
-    entity["RowKey"] = body.session_id
+    entity["RowKey"] = str(uuid.uuid4())
     entity["Question"] = body.question
     entity["Answer"] = body.answer
+    entity["SessionId"] = body.session_id
 
     # Insert the entity into the Azure Table
     try:
@@ -77,12 +79,22 @@ async def get_feedback_count():
 @app.get("/api/history/{session_id}")
 def get_chat_history(session_id):
     entities = history_client.query_entities(query_filter=f"PartitionKey eq '{session_id}'")
+    
+    # Sort the entities by timestamp
     sorted_entities = sorted(
             (dict(entity, Timestamp=entity.metadata["timestamp"]) for entity in entities),
             key=lambda x: x["Timestamp"]
         )
+    
     # Return the latest 2 question-answer pairs
-    return sorted_entities[-4:]
+    filtered_entities = sorted_entities[-4:]
+
+    processed_entities = [
+        {**{k: v for k, v in d.items() if k != "Timestamp" and k != "RowKey" and k != "PartitionKey"}}
+        for d in filtered_entities
+    ]
+
+    return processed_entities
 
 # This endpoint adds a new chat to the chat history for a given session id
 @app.post("/api/history")
@@ -91,14 +103,16 @@ def add_to_chat_history(body: Answer):
         # Insert the entity for the user question
         user_entity = TableEntity()
         user_entity["PartitionKey"] = body.session_id
-        user_entity["RowKey"] = "user"
+        user_entity["RowKey"] = str(uuid.uuid4())
+        user_entity["role"] = "user"
         user_entity["content"] = body.question
         history_client.create_entity(entity=user_entity)
 
         # Insert the entity for the bot answer
         bot_entity = TableEntity()
         bot_entity["PartitionKey"] = body.session_id
-        bot_entity["RowKey"] = "bot"
+        bot_entity["RowKey"] = str(uuid.uuid4())
+        bot_entity["role"] = "bot"
         bot_entity["content"] = body.answer
         history_client.create_entity(entity=bot_entity)
         

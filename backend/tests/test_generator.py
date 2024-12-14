@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from generator import Generator
+from modules.generator import Generator
 
 @pytest.fixture
 def mock_retriever():
@@ -10,10 +10,10 @@ def mock_retriever():
     return retriever
 
 @pytest.fixture
-@patch("generator.AzureChatOpenAI")
-@patch("generator.ChatPromptTemplate")
-@patch("generator.StrOutputParser")
-@patch("generator.RunnableLambda")
+@patch("modules.generator.AzureChatOpenAI")
+@patch("modules.generator.ChatPromptTemplate")
+@patch("modules.generator.StrOutputParser")
+@patch("modules.generator.RunnableLambda")
 def generator_with_mocks(mock_runnable, mock_parser, mock_prompt_template, mock_azure_chat, mock_retriever):
     # Set up mocks for each of the LLM, prompt template, parser, and passthrough
     mock_prompt_template.from_messages.return_value = mock_prompt_template

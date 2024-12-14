@@ -1,7 +1,7 @@
 import os
 import pytest
 from unittest.mock import patch, MagicMock
-from retriever import Retriever
+from modules.retriever import Retriever
 
 @pytest.fixture(autouse=True)
 def setup_env():
@@ -12,9 +12,9 @@ def setup_env():
     os.environ["AZURE_SEARCH_KEY"] = "fake_key"
     os.environ["DB_INDEX"] = "fake_index"
 
-@patch("retriever.AzureOpenAIEmbeddings")
-@patch("retriever.GoogleGenerativeAIEmbeddings")
-@patch("retriever.AzureSearch")
+@patch("modules.retriever.AzureOpenAIEmbeddings")
+@patch("modules.retriever.GoogleGenerativeAIEmbeddings")
+@patch("modules.retriever.AzureSearch")
 def test_model_initialization_openai(mock_azure_search, mock_google_embeddings, mock_openai_embeddings, setup_env):
     # Test if OpenAI embeddings are used when EMBEDDINGS_MODEL is "openai"
     os.environ["EMBEDDINGS_MODEL"] = "openai"
@@ -23,9 +23,9 @@ def test_model_initialization_openai(mock_azure_search, mock_google_embeddings, 
     mock_openai_embeddings.assert_called_once_with(model="ada-002", openai_api_version="2024-06-01")
     mock_google_embeddings.assert_not_called()
 
-@patch("retriever.AzureOpenAIEmbeddings")
-@patch("retriever.GoogleGenerativeAIEmbeddings")
-@patch("retriever.AzureSearch")
+@patch("modules.retriever.AzureOpenAIEmbeddings")
+@patch("modules.retriever.GoogleGenerativeAIEmbeddings")
+@patch("modules.retriever.AzureSearch")
 def test_model_initialization_google(mock_azure_search, mock_google_embeddings, mock_openai_embeddings, setup_env):
     # Test if Google embeddings are used when EMBEDDINGS_MODEL is "google"
     os.environ["EMBEDDINGS_MODEL"] = "google"
@@ -34,8 +34,8 @@ def test_model_initialization_google(mock_azure_search, mock_google_embeddings, 
     mock_google_embeddings.assert_called_once_with(model="models/embedding-001")
     mock_openai_embeddings.assert_not_called()
 
-@patch("retriever.AzureOpenAIEmbeddings")
-@patch("retriever.AzureSearch")
+@patch("modules.retriever.AzureOpenAIEmbeddings")
+@patch("modules.retriever.AzureSearch")
 def test_vector_store_initialization(mock_azure_search, mock_openai_embeddings, setup_env):
     # Test vector store initialization with environment variables
     os.environ["EMBEDDINGS_MODEL"] = "openai"
@@ -49,8 +49,8 @@ def test_vector_store_initialization(mock_azure_search, mock_openai_embeddings, 
         embedding_function=retriever.embeddings.embed_query
     )
 
-@patch("retriever.AzureOpenAIEmbeddings")
-@patch("retriever.AzureSearch")
+@patch("modules.retriever.AzureOpenAIEmbeddings")
+@patch("modules.retriever.AzureSearch")
 def test_invoke_method(mock_azure_search, mock_openai_embeddings, setup_env):
     # Mock the similarity search response
     mock_docs = [MagicMock(page_content="Document 1"), MagicMock(page_content="Document 2"), MagicMock(page_content="Document 3")]
