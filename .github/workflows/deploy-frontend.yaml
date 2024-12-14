@@ -8,6 +8,8 @@ on:
 env:
   WORKING_DIRECTORY: "frontend"
   NODE_VERSION: "20"
+  VITE_API_URL: https://chatwithfabi-dev-backend.azurewebsites.net
+  VITE_GITHUB_URL: https://github.com/fabimass/rag-ai-chatbot
 
 jobs:
   build-and-deploy:
