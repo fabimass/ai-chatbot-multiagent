@@ -1,6 +1,6 @@
 from pydantic import BaseModel
+from typing import TypedDict
 
-# Define body model for the http requests
 class QuestionModel(BaseModel):
     question: str
     session_id: str
@@ -10,3 +10,9 @@ class AnswerModel(QuestionModel):
 
 class FeedbackModel(AnswerModel):
     like: bool
+
+class State(TypedDict):
+    question: str
+    agent_rag: str
+    agent_sql: str
+    answer: str
