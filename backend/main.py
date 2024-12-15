@@ -2,9 +2,10 @@ from http.client import HTTPException
 import uuid
 from fastapi import FastAPI
 from dotenv import load_dotenv
+from modules.models import QuestionModel, AnswerModel, FeedbackModel
 from modules.retriever import Retriever
 from modules.generator import Generator
-from modules.utils import Question, Answer, Feedback, get_table_client
+from modules.utils import get_table_client
 from azure.data.tables import TableEntity
 
 # Load environment variables
@@ -23,14 +24,16 @@ app = FastAPI()
 feedback_client = get_table_client("Feedback")
 history_client = get_table_client("ChatHistory") 
 
+
 # This endpoint returns the user prompt, for testing purposes
 @app.get("/api/ping")
 def ping():
     return "pong"
 
+
 # This endpoint receives a prompt and generates a response
 @app.post("/api/ask")
-def generate_answer(body: Question):
+def generate_answer(body: QuestionModel):
     session_id = body.session_id
     prompt = body.question
 
@@ -39,14 +42,15 @@ def generate_answer(body: Question):
 
     try:
         answer = generator.invoke(prompt, session_history)
-        add_to_chat_history(Answer(**{"question": prompt, "answer": answer, "session_id": session_id}))
+        add_to_chat_history(AnswerModel(**{"question": prompt, "answer": answer, "session_id": session_id}))
         return {"question": prompt, "answer": answer}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
+
 # This endpoint receives feedback from the user
 @app.post("/api/feedback")
-async def store_feedback(body: Feedback):
+async def store_feedback(body: FeedbackModel):
     entity = TableEntity()
     entity["PartitionKey"] = "likes" if body.like else "hates"
     entity["RowKey"] = str(uuid.uuid4())
@@ -61,6 +65,7 @@ async def store_feedback(body: Feedback):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
+
 # This endpoint returns the number of likes and hates
 @app.get("/api/feedback")
 async def get_feedback_count():
@@ -74,7 +79,8 @@ async def get_feedback_count():
         return {"likes": likes_count, "hates": hates_count}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
-    
+
+
 # This endpoint returns the chat history for a given session id
 @app.get("/api/history/{session_id}")
 def get_chat_history(session_id):
@@ -96,9 +102,10 @@ def get_chat_history(session_id):
 
     return processed_entities
 
+
 # This endpoint adds a new chat to the chat history for a given session id
 @app.post("/api/history")
-def add_to_chat_history(body: Answer):
+def add_to_chat_history(body: AnswerModel):
     try:
         # Insert the entity for the user question
         user_entity = TableEntity()
@@ -119,6 +126,7 @@ def add_to_chat_history(body: Answer):
         return {"message": "Chat history updated successfully."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}") 
+
 
 # This endpoint deletes the chat history for a given session id
 @app.delete("/api/history/{session_id}")

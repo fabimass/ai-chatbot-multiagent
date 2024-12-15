@@ -1,17 +1,5 @@
 import os
 from azure.data.tables import TableServiceClient
-from pydantic import BaseModel
-
-# Define body model for the http requests
-class Question(BaseModel):
-    question: str
-    session_id: str
-
-class Answer(Question):
-    answer: str
-
-class Feedback(Answer):
-    like: bool
 
 # Set up the connection to Azure Table Storage
 def get_table_client(table_name):
