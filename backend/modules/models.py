@@ -7,6 +7,7 @@ class QuestionModel(BaseModel):
 
 class AnswerModel(QuestionModel):
     answer: str
+    agents: dict
 
 class FeedbackModel(AnswerModel):
     like: bool

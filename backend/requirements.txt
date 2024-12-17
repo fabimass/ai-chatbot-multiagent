@@ -3,10 +3,12 @@ fastapi[standard]
 langchain==0.2.13
 langchain-community==0.2.12
 langchain-openai==0.1.22
+langgraph==0.2.59
 azure-search-documents==11.5.1
 azure-identity==1.17.1
 langchain-google-genai==1.0.10
 uvicorn[standard]
 azure-data-tables==12.5.0
+pyodbc==5.2.0
 pytest==8.3.3
 pytest-mock==3.14.0

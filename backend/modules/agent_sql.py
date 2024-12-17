@@ -11,7 +11,7 @@ class AgentSql:
         self.name = config["agent_name"]
         
         # Database instantiation
-        self.db_uri = config["sql_server_connection_string"]
+        self.db_uri = config["connection_string"]
         self.db = self.connect()
         
         # LLM instantiation

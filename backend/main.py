@@ -1,28 +1,47 @@
 from http.client import HTTPException
 import uuid
 from fastapi import FastAPI
-from dotenv import load_dotenv
-from modules.models import QuestionModel, AnswerModel, FeedbackModel
-from modules.retriever import Retriever
-from modules.generator import Generator
+from config import rag_config, sql_config
+from modules.models import QuestionModel, AnswerModel, FeedbackModel, State
+from modules.agent_rag import AgentRag
+from modules.agent_sql import AgentSql
+from modules.supervisor import Supervisor
 from modules.utils import get_table_client
 from azure.data.tables import TableEntity
+from langchain_core.runnables import RunnableLambda
+from langgraph.graph import StateGraph
 
-# Load environment variables
-load_dotenv()
 
-# The retriever will handle the connection with the database and retrieve the context given a query
-retriever = Retriever()
+# Agents instantiation
+agent_rag = AgentRag(rag_config)
+agent_sql = AgentSql(sql_config)
+agents = ["agent_rag", "agent_sql"]
 
-# The generator produces an answer using a prompt that includes the question and the retrieved data
-generator = Generator(retriever)
+# Supervisor instantiation
+supervisor = Supervisor(agents)
+
+# Graph instantiation
+builder = StateGraph(State)
+builder.add_node("supervisor_node", supervisor.pick_next_agent)
+builder.add_node("summarizer_node", supervisor.summarize)
+builder.add_node("rag_node", agent_rag.generate_answer)
+builder.add_node("sql_node", agent_sql.generate_answer)
+builder.add_conditional_edges(
+    "supervisor_node",
+    RunnableLambda(lambda inputs: inputs["next"]),  
+    {"agent_rag": "rag_node", "agent_sql": "sql_node", "FINISH": "summarizer_node"}
+)
+builder.add_edge("rag_node", "supervisor_node")
+builder.add_edge("sql_node", "supervisor_node")
+builder.set_entry_point("supervisor_node")
+graph = builder.compile()
+
+# Tables instantiation
+feedback_table = get_table_client("Feedback")
+history_table = get_table_client("ChatHistory") 
 
 # Entry point to use FastAPI
 app = FastAPI()
-
-# Clients for Azure Storage Tables
-feedback_client = get_table_client("Feedback")
-history_client = get_table_client("ChatHistory") 
 
 
 # This endpoint returns the user prompt, for testing purposes
@@ -41,9 +60,9 @@ def generate_answer(body: QuestionModel):
     session_history = get_chat_history(session_id)
 
     try:
-        answer = generator.invoke(prompt, session_history)
-        add_to_chat_history(AnswerModel(**{"question": prompt, "answer": answer, "session_id": session_id}))
-        return {"question": prompt, "answer": answer}
+        result = graph.invoke({ "question": prompt })
+        #add_to_chat_history(AnswerModel(**{"question": prompt, "answer": answer, "session_id": session_id}))
+        return {"question": prompt, "answer": result["answer"], "agents": {key: value for key, value in result.items() if key.startswith("agent_")}}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
@@ -60,7 +79,7 @@ async def store_feedback(body: FeedbackModel):
 
     # Insert the entity into the Azure Table
     try:
-        feedback_client.create_entity(entity=entity)
+        feedback_table.create_entity(entity=entity)
         return {"message": "Feedback stored successfully."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
@@ -71,10 +90,10 @@ async def store_feedback(body: FeedbackModel):
 async def get_feedback_count():
     try:
         # Query for "likes" entries
-        likes_count = len(list(feedback_client.query_entities(query_filter="PartitionKey eq 'likes'")))
+        likes_count = len(list(feedback_table.query_entities(query_filter="PartitionKey eq 'likes'")))
         
         # Query for "hates" entries
-        hates_count = len(list(feedback_client.query_entities(query_filter="PartitionKey eq 'hates'")))
+        hates_count = len(list(feedback_table.query_entities(query_filter="PartitionKey eq 'hates'")))
 
         return {"likes": likes_count, "hates": hates_count}
     except Exception as e:
@@ -84,7 +103,7 @@ async def get_feedback_count():
 # This endpoint returns the chat history for a given session id
 @app.get("/api/history/{session_id}")
 def get_chat_history(session_id):
-    entities = history_client.query_entities(query_filter=f"PartitionKey eq '{session_id}'")
+    entities = history_table.query_entities(query_filter=f"PartitionKey eq '{session_id}'")
     
     # Sort the entities by timestamp
     sorted_entities = sorted(
@@ -113,7 +132,7 @@ def add_to_chat_history(body: AnswerModel):
         user_entity["RowKey"] = str(uuid.uuid4())
         user_entity["role"] = "user"
         user_entity["content"] = body.question
-        history_client.create_entity(entity=user_entity)
+        history_table.create_entity(entity=user_entity)
 
         # Insert the entity for the bot answer
         bot_entity = TableEntity()
@@ -121,7 +140,7 @@ def add_to_chat_history(body: AnswerModel):
         bot_entity["RowKey"] = str(uuid.uuid4())
         bot_entity["role"] = "bot"
         bot_entity["content"] = body.answer
-        history_client.create_entity(entity=bot_entity)
+        history_table.create_entity(entity=bot_entity)
         
         return {"message": "Chat history updated successfully."}
     except Exception as e:
@@ -131,10 +150,10 @@ def add_to_chat_history(body: AnswerModel):
 # This endpoint deletes the chat history for a given session id
 @app.delete("/api/history/{session_id}")
 def delete_chat_history(session_id):
-    entities = history_client.query_entities(f"PartitionKey eq '{session_id}'")
+    entities = history_table.query_entities(f"PartitionKey eq '{session_id}'")
     count = 0
     for entity in entities:
-        history_client.delete_entity(
+        history_table.delete_entity(
             partition_key=entity["PartitionKey"],
             row_key=entity["RowKey"]
         )
