@@ -27,44 +27,52 @@ def agent_rag(config):
         return AgentRag(config)
 
 def test_retrieve_context(agent_rag):
-    # Mock similarity search results
+    mock_query = "Mock query"
     mock_docs = [MagicMock(page_content="Document 1"), MagicMock(page_content="Document 2")]
+    
+    # Mock similarity search results
     agent_rag.vstore.similarity_search.return_value = mock_docs
 
-    mock_query = "Mock query"
+    # Call the method under test
     context = agent_rag.retrieve_context(mock_query)
 
+    # Assertions to verify expected behavior
     agent_rag.vstore.similarity_search.assert_called_once_with(mock_query, k=3)
     assert context == "Document 1\n\nDocument 2"
 
-#def test_generate_answer(agent_rag):
-#    mock_question = "Mock question"
-#    mock_context = "Mock context"
-#    mock_answer = "Mock answer"
-#
-#    # Mock context retrieval and chain invocation
-#    agent_rag.retrieve_context = MagicMock(return_value=mock_context)
-#    agent_rag.rag_chain.invoke = MagicMock(return_value=mock_answer)
-#
-#    state = State({"question": mock_question})
-#    response = agent_rag.generate_answer(state)
-#
-#    agent_rag.retrieve_context.assert_called_once_with(mock_question)
-#    agent_rag.rag_chain.invoke.assert_called_once_with({"question": mock_question, "context": mock_context})
-#    assert response == {"agent_rag": mock_answer}
+def test_generate_answer(agent_rag):
+    mock_question = "Mock question"
+    mock_context = "Mock context"
+    mock_answer = "Mock answer"
+    mock_state = State({"question": mock_question})
 
-#def test_initialization_with_config(config):
-#    # Test initialization with different embeddings configurations
-#    with patch('langchain_openai.AzureOpenAIEmbeddings') as MockOpenAIEmbeddings, \
-#         patch('langchain_google_genai.GoogleGenerativeAIEmbeddings') as MockGoogleEmbeddings, \
-#         patch('langchain_community.vectorstores.azuresearch.AzureSearch') as MockAzureSearch:
-#        
-#        # Test with OpenAI embeddings
-#        agent = AgentRag(config)
-#        MockOpenAIEmbeddings.assert_called_once_with(model="ada-002", openai_api_version="2024-06-01")
-#        assert isinstance(agent.embeddings, MagicMock)
-#
-#        # Test with Google embeddings
-#        config["embeddings"] = "google"
-#        agent = AgentRag(config)
-#        MockGoogleEmbeddings.assert_called_once_with(model="ada-002", openai_api_version="2024-06-01")
+    # Mock context retrieval and chain invocation
+    agent_rag.retrieve_context = MagicMock(return_value=mock_context)
+    agent_rag.rag_chain = MagicMock()
+    agent_rag.rag_chain.invoke.return_value = mock_answer
+
+    # Call the method under test
+    response = agent_rag.generate_answer(mock_state)
+
+    # Assertions to verify expected behavior
+    agent_rag.retrieve_context.assert_called_once_with(mock_question)
+    agent_rag.rag_chain.invoke.assert_called_once_with({"question": mock_question, "context": mock_context})
+    assert response == {"agent_rag": mock_answer}
+
+def test_initialization_with_config(config):
+    # Test initialization with different embeddings configurations
+    with patch('modules.agent_rag.AzureOpenAIEmbeddings') as MockOpenAIEmbeddings, \
+         patch('modules.agent_rag.GoogleGenerativeAIEmbeddings') as MockGoogleEmbeddings, \
+         patch('modules.agent_rag.AzureSearch') as MockAzureSearch, \
+         patch('modules.agent_rag.AzureChatOpenAI') as MockLLM:
+        
+        # Test with OpenAI embeddings
+        agent = AgentRag(config)
+        MockOpenAIEmbeddings.assert_called_once_with(model="ada-002", openai_api_version="2024-06-01")
+        assert isinstance(agent.embeddings, MagicMock)
+
+        # Test with Google embeddings
+        config["embeddings"] = "google"
+        agent = AgentRag(config)
+        MockGoogleEmbeddings.assert_called_once_with(model="models/embedding-001")
+        assert isinstance(agent.embeddings, MagicMock)

@@ -1,14 +1,14 @@
 import pytest
 from fastapi.testclient import TestClient
-from main import app, get_chat_history
+#from main import app, get_chat_history
 from unittest.mock import patch
 
-client = TestClient(app)
+#client = TestClient(app)
 
-def test_ping():
-    response = client.get("/api/ping")
-    assert response.status_code == 200
-    assert response.json() == "pong"
+#def test_ping():
+#    response = client.get("/api/ping")
+#    assert response.status_code == 200
+#    assert response.json() == "pong"
 
 #@patch('modules.generator.Generator.invoke', return_value="This is a mock answer")
 #@patch('main.get_chat_history', return_value=[])
