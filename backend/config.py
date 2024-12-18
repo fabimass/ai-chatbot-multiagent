@@ -13,5 +13,5 @@ rag_config = {
 
 sql_config = {
     "agent_name": "SQL Agent",
-    "connection_string": f"mssql+pyodbc://{os.getenv("SQL_USERNAME")}:{os.getenv("SQL_PASSWORD")}@{os.getenv("SQL_SERVER")}:1433/{os.getenv("SQL_DATABASE")}?driver=ODBC+Driver+18+for+SQL+Server"
+    "connection_string": f"mssql+pyodbc://{os.getenv('SQL_USERNAME')}:{os.getenv('SQL_PASSWORD')}@{os.getenv('SQL_SERVER')}:1433/{os.getenv('SQL_DATABASE')}?driver=ODBC+Driver+18+for+SQL+Server"
 }
