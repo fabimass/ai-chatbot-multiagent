@@ -1,4 +1,4 @@
-from modules.models import State
+from backend.modules.models import State
 from langchain_openai import AzureOpenAIEmbeddings, AzureChatOpenAI
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores.azuresearch import AzureSearch

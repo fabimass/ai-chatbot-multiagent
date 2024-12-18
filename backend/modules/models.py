@@ -11,6 +11,7 @@ class AnswerModel(QuestionModel):
 
 class FeedbackModel(AnswerModel):
     like: bool
+    agents: None = None
 
 class State(TypedDict):
     question: str

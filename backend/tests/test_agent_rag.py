@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from modules.models import State
-from modules.agent_rag import AgentRag
+from backend.modules.models import State
+from backend.modules.agent_rag import AgentRag
 
 @pytest.fixture
 def config():
@@ -15,9 +15,9 @@ def config():
 
 @pytest.fixture
 def agent_rag(config):
-    with patch('modules.agent_rag.AzureOpenAIEmbeddings') as MockEmbeddings, \
-         patch('modules.agent_rag.AzureSearch') as MockAzureSearch, \
-         patch('modules.agent_rag.AzureChatOpenAI') as MockLLM:
+    with patch('backend.modules.agent_rag.AzureOpenAIEmbeddings') as MockEmbeddings, \
+         patch('backend.modules.agent_rag.AzureSearch') as MockAzureSearch, \
+         patch('backend.modules.agent_rag.AzureChatOpenAI') as MockLLM:
         
         # Mock the embeddings, vector store, and LLM
         MockEmbeddings.return_value = MagicMock(embed_query=MagicMock())
@@ -61,10 +61,10 @@ def test_generate_answer(agent_rag):
 
 def test_initialization_with_config(config):
     # Test initialization with different embeddings configurations
-    with patch('modules.agent_rag.AzureOpenAIEmbeddings') as MockOpenAIEmbeddings, \
-         patch('modules.agent_rag.GoogleGenerativeAIEmbeddings') as MockGoogleEmbeddings, \
-         patch('modules.agent_rag.AzureSearch') as MockAzureSearch, \
-         patch('modules.agent_rag.AzureChatOpenAI') as MockLLM:
+    with patch('backend.modules.agent_rag.AzureOpenAIEmbeddings') as MockOpenAIEmbeddings, \
+         patch('backend.modules.agent_rag.GoogleGenerativeAIEmbeddings') as MockGoogleEmbeddings, \
+         patch('backend.modules.agent_rag.AzureSearch') as MockAzureSearch, \
+         patch('backend.modules.agent_rag.AzureChatOpenAI') as MockLLM:
         
         # Test with OpenAI embeddings
         agent = AgentRag(config)
