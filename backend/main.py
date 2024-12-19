@@ -112,13 +112,15 @@ def store_feedback(body: FeedbackModel, setup: dict = Depends(get_setup)):
 def get_feedback_count(setup: dict = Depends(get_setup)):
     feedback_table = setup["feedback_table"]
     try:
-        # Query for "likes" entries
-        likes_count = len(list(feedback_table.query_entities(query_filter="PartitionKey eq 'likes'")))
+        # Query all feedback entries
+        entities = list(feedback_table.query_entities(query_filter="PartitionKey eq 'likes' or PartitionKey eq 'hates'"))
         
-        # Query for "hates" entries
-        hates_count = len(list(feedback_table.query_entities(query_filter="PartitionKey eq 'hates'")))
-
-        return {"likes": likes_count, "hates": hates_count}
+        # Count likes and hates
+        counts = {"likes": 0, "hates": 0}
+        for entity in entities:
+            counts[entity["PartitionKey"]] += 1
+        
+        return counts
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
@@ -128,7 +130,7 @@ def get_feedback_count(setup: dict = Depends(get_setup)):
 def get_chat_history(session_id, setup: dict = Depends(get_setup)):
     history_table = setup["history_table"]
     entities = history_table.query_entities(query_filter=f"PartitionKey eq '{session_id}'")
-    
+
     # Sort the entities by timestamp
     sorted_entities = sorted(
             (dict(entity, Timestamp=entity.metadata["timestamp"]) for entity in entities),

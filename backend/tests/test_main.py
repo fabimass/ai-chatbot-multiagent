@@ -79,20 +79,20 @@ def test_get_feedback_count(mock_setup):
     
     # Mock query_entities to return a fake history
     mock_feedback_table.query_entities.return_value = [
-        {"PartitionKey": "123", "RowKey": "1"},
-        {"PartitionKey": "123", "RowKey": "2"},
-        {"PartitionKey": "123", "RowKey": "3"}
+        MockEntity(PartitionKey="likes", RowKey="1"),
+        MockEntity(PartitionKey="likes", RowKey="2"),
+        MockEntity(PartitionKey="hates", RowKey="3")
     ]
 
     # Call the endpoint under test
     response = get_feedback_count(setup=mock_setup)
     
     # Assertions to verify expected behavior
-    mock_feedback_table.query_entities.assert_has_calls([call(query_filter="PartitionKey eq 'likes'"), call(query_filter="PartitionKey eq 'hates'")])
+    mock_feedback_table.query_entities.assert_called_once_with(query_filter="PartitionKey eq 'likes' or PartitionKey eq 'hates'")
     assert "likes" in response
-    assert response["likes"] == 3
+    assert response["likes"] == 2
     assert "hates" in response
-    assert response["hates"] == 3
+    assert response["hates"] == 1
 
 def test_get_chat_history(mock_setup):
     mock_history_table = mock_setup["history_table"]
