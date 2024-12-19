@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch, call
-from backend.main import generate_answer, store_feedback, get_feedback_count, get_chat_history
+from backend.main import generate_answer, store_feedback, get_feedback_count, get_chat_history, add_to_chat_history
 from backend.modules.models import QuestionModel, AnswerModel, FeedbackModel
 from datetime import datetime
 
@@ -53,13 +53,7 @@ class MockEntity(dict):
 def test_store_feedback(mock_setup, mock_feedback):
     with patch('backend.main.uuid') as MockId:
         mock_feedback_table = mock_setup["feedback_table"]
-        mock_entity = {
-            "PartitionKey": "likes",
-            "RowKey": "1234",
-            "Question": mock_feedback.question,
-            "Answer": mock_feedback.answer,
-            "SessionId": mock_feedback.session_id
-        }
+        mock_entity = MockEntity(PartitionKey="likes", RowKey="1", Question=mock_feedback.question, Answer=mock_feedback.answer, SessionId=mock_feedback.session_id)
 
         # Mock the row key generation
         MockId.uuid4.return_value = mock_entity["RowKey"]
@@ -146,25 +140,23 @@ def test_get_chat_history(mock_setup):
     response = get_chat_history(mock_session_id, setup=mock_setup)
     assert len(response) == 0
 
+def test_add_to_chat_history(mock_setup, mock_answer):
+    with patch('backend.main.uuid') as MockId:  
+        mock_history_table = mock_setup["history_table"]
+        mock_user = MockEntity(PartitionKey=mock_answer.session_id, RowKey="123", role="user", content=mock_answer.question)
+        mock_bot = MockEntity(PartitionKey=mock_answer.session_id, RowKey="123", role="bot", content=mock_answer.answer)
+        MockId.uuid4.return_value = "123"
+        
+        # Mock create_entity to do nothing
+        mock_history_table.create_entity.return_value = None
+        
+        # Call the endpoint under test
+        response = add_to_chat_history(body=mock_answer, setup=mock_setup)
 
-## Test for /api/history endpoint
-#def test_add_to_chat_history(mock_setup):
-#    mock_history_table = mock_setup["history_table"]
-#    
-#    # Mock create_entity to do nothing (successful)
-#    mock_history_table.create_entity.return_value = None
-#
-#    body = {
-#        "session_id": "123",
-#        "question": "What is the capital of France?",
-#        "answer": "Paris"
-#    }
-#    response = client.post("/api/history", json=body)
-#
-#    assert response.status_code == 200
-#    assert response.json()["message"] == "Chat history updated successfully."
-#
-#
+        # Assertions to verify expected behavior
+        mock_history_table.create_entity.assert_has_calls([call(entity=mock_user), call(entity=mock_bot)])
+        assert response == {"message": "Chat history updated successfully."}
+
 ## Test for /api/history/{session_id} delete endpoint
 #def test_delete_chat_history(mock_setup):
 #    mock_history_table = mock_setup["history_table"]

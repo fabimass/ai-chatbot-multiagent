@@ -151,7 +151,7 @@ def get_chat_history(session_id, setup: dict = Depends(get_setup)):
 # This endpoint adds a new chat to the chat history for a given session id
 @app.post("/api/history")
 def add_to_chat_history(body: AnswerModel, setup: dict = Depends(get_setup)):
-    history_table = setup["hiostory_table"]
+    history_table = setup["history_table"]
     try:
         # Insert the entity for the user question
         user_entity = TableEntity()
