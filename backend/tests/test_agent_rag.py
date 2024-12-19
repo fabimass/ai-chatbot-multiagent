@@ -41,22 +41,25 @@ def test_retrieve_context(agent_rag):
     assert context == "Document 1\n\nDocument 2"
 
 def test_generate_answer(agent_rag):
-    mock_question = "Mock question"
-    mock_context = "Mock context"
-    mock_answer = "Mock answer"
+    mock_question = "What is the capital of France?"
+    mock_context = "France is a country in Europe. Paris is its capital."
+    mock_answer = "Paris"
     mock_state = State({"question": mock_question})
 
-    # Mock context retrieval and chain invocation
+    # Mock context retrieval and LLM invocation
     agent_rag.retrieve_context = MagicMock(return_value=mock_context)
-    agent_rag.rag_chain = MagicMock()
-    agent_rag.rag_chain.invoke.return_value = mock_answer
+    agent_rag.llm.return_value = mock_answer
 
     # Call the method under test
     response = agent_rag.generate_answer(mock_state)
 
-    # Assertions to verify expected behavior
+    # Assert that a call to retrieve context was done
     agent_rag.retrieve_context.assert_called_once_with(mock_question)
-    agent_rag.rag_chain.invoke.assert_called_once_with({"question": mock_question, "context": mock_context})
+    
+    # Assert that the context was correctly injected into the system prompt
+    assert mock_context in agent_rag.llm.call_args[0][0].messages[0].content
+
+    # Assert the final answer
     assert response == {"agent_rag": mock_answer}
 
 def test_initialization_with_config(config):

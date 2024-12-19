@@ -59,7 +59,8 @@ class AgentRag:
             #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
             | self.prompt
             | self.llm
-            | self.parser
+            | RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
+            #| self.parser
         )
        
     def retrieve_context(self, query):
@@ -74,7 +75,7 @@ class AgentRag:
 
         # Retrieve the most relevant documents from the vector store
         context = self.retrieve_context(state['question'])
-
+        
         print(f"{self.name} says: generating answer...")
         answer = self.rag_chain.invoke({"question": state["question"], "context": context})
         print(f"{self.name} says: {answer}")
