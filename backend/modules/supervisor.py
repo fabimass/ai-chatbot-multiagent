@@ -22,9 +22,12 @@ class Supervisor:
             f"You are a supervisor tasked with managing a conversation between the following workers: {self.agents}."
             "Given the following user question, all the workers will provide a response."
             "Your task is to analyze each of the responses and provide the best possible response to the user."
-            "Do not make up for new information that is not explicitly in the workers response."
+            "You are also provided with the chat history, so you are aware of previous questions and answers."
+            "Do not make up new information that is not explicitly in the workers response nor in the chat history."
             "\n\n"
             "Workers response: {agents_output}"
+            "\n\n"
+            "Chat history: {history}"
         )
 
         # The prompt puts together the system prompt with the user question
@@ -57,5 +60,5 @@ class Supervisor:
     def summarize(self, state: State):
         print("Summarizing...")
         agents_output = {key: state[key] for key in self.agents if key in state}
-        answer = self.rag_chain.invoke({"question": state["question"], "agents_output": agents_output, "history": []})
+        answer = self.rag_chain.invoke({"question": state["question"], "agents_output": agents_output, "history": state["history"]})
         return { "answer": answer }

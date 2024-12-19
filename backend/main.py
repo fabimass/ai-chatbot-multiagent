@@ -81,9 +81,10 @@ def generate_answer(body: QuestionModel, setup: dict = Depends(get_setup)):
     session_history = get_chat_history(session_id, setup)
 
     try:
-        result = graph.invoke({ "question": prompt })
-        #add_to_chat_history(AnswerModel(**{"question": prompt, "answer": answer, "session_id": session_id}))
-        return {"question": prompt, "answer": result["answer"], "agents": {key: value for key, value in result.items() if key.startswith("agent_")}}
+        result = graph.invoke({ "question": prompt, "history": session_history })
+        response = {"question": prompt, "answer": result["answer"], "session_id": session_id, "agents": {key: value for key, value in result.items() if key.startswith("agent_")}}
+        add_to_chat_history(AnswerModel(**response), setup=setup)
+        return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
