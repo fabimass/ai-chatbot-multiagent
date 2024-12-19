@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch, call
-from backend.main import generate_answer, store_feedback, get_feedback_count, get_chat_history, add_to_chat_history
+from backend.main import generate_answer, store_feedback, get_feedback_count, get_chat_history, add_to_chat_history, delete_chat_history
 from backend.modules.models import QuestionModel, AnswerModel, FeedbackModel
 from datetime import datetime
 
@@ -157,18 +157,21 @@ def test_add_to_chat_history(mock_setup, mock_answer):
         mock_history_table.create_entity.assert_has_calls([call(entity=mock_user), call(entity=mock_bot)])
         assert response == {"message": "Chat history updated successfully."}
 
-## Test for /api/history/{session_id} delete endpoint
-#def test_delete_chat_history(mock_setup):
-#    mock_history_table = mock_setup["history_table"]
-#    
-#    # Mock query_entities and delete_entity
-#    mock_history_table.query_entities.return_value = [
-#        {"PartitionKey": "123", "RowKey": "1", "role": "user", "content": "What is the capital of France?"},
-#        {"PartitionKey": "123", "RowKey": "2", "role": "bot", "content": "Paris"}
-#    ]
-#    mock_history_table.delete_entity.return_value = None
-#
-#    response = client.delete("/api/history/123")
-#
-#    assert response.status_code == 200
-#    assert response.json()["message"] == "Deleted 2 records successfully."
+def test_delete_chat_history(mock_setup):
+    mock_history_table = mock_setup["history_table"]
+    mock_session_id = "123"
+    
+    # Mock query_entities and delete_entity
+    mock_history_table.query_entities.return_value = [
+        MockEntity(PartitionKey=mock_session_id, RowKey="2", role="bot", content="Paris", metadata={"timestamp": datetime(2024, 12, 18, 12, 0, 1)}),
+        MockEntity(PartitionKey=mock_session_id, RowKey="1", role="user", content="What is the capital of France?", metadata={"timestamp": datetime(2024, 12, 18, 12, 0, 0)}),
+    ]
+    mock_history_table.delete_entity.return_value = None
+
+    # Call the endpoint under test
+    response = delete_chat_history(mock_session_id, setup=mock_setup)
+
+    # Assertions to verify expected behavior
+    mock_history_table.query_entities.assert_called_once_with(f"PartitionKey eq '{mock_session_id}'")
+    mock_history_table.delete_entity.assert_has_calls([call(partition_key=mock_session_id, row_key="2"), call(partition_key=mock_session_id, row_key="1")])
+    assert response == {"message": "Deleted 2 records successfully."}
