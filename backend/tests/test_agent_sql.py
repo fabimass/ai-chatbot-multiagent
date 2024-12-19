@@ -7,6 +7,7 @@ from backend.modules.agent_sql import AgentSql
 def config():
     return {
         "agent_name": "SQL Agent Test",
+        "agent_directive": "You are a SQL agent",
         "connection_string": "mock-connection-string"
     }
 
@@ -80,7 +81,7 @@ def test_run_query(agent_sql, test_variables):
     assert result == test_variables["mock_query_result"]
     agent_sql.db.run.assert_called_once_with(test_variables["mock_cleaned_query"])
 
-def test_generate_answer(agent_sql, test_variables):
+def test_generate_answer(agent_sql, test_variables, config):
     # Mock already tested methods
     agent_sql.get_schema = MagicMock(return_value=test_variables["mock_schema"])
     agent_sql.generate_query = MagicMock(return_value=test_variables["mock_cleaned_query"])
@@ -96,6 +97,9 @@ def test_generate_answer(agent_sql, test_variables):
     assert test_variables["mock_question"] in agent_sql.llm.call_args[0][0].messages[1].content
     assert test_variables["mock_cleaned_query"] in agent_sql.llm.call_args[0][0].messages[0].content
     assert str(test_variables["mock_query_result"]) in agent_sql.llm.call_args[0][0].messages[0].content
+
+    # Assert the agent is aware of its own skills
+    assert config["agent_directive"] in agent_sql.llm.call_args[0][0].messages[0].content
     
     # Assert the final answer
     assert answer == {"agent_sql": test_variables["mock_answer"]}

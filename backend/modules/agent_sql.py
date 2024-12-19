@@ -83,16 +83,16 @@ class AgentSql:
         self.answer_generator_prompt = (
             "You are an AI assistant for question-answering tasks."
             "Your skills are listed below, these skills dictate what you can answer about."
-            "Use only the following user question, corresponding SQL query, SQL result, and your knowledge about your skills to answer the question." 
+            "Use only the following user question, corresponding SQL query, SQL result, and your knowledge about your skills to answer the question. " 
             "If you cannot find the answer, say that you don't know."
             "Never make up information that is not in the provided results nor in your list of skills." 
             "Use three sentences maximum and keep the answer concise."
             "\n\n"
+            f"Your skills: {config['agent_directive']}"
+            "\n\n"
             "SQL query: {query}"
             "\n\n"
             "SQL result: {result}"
-            "\n\n"
-            f"Your skills: {config['agent_directive']}"
         )
 
         self.answer_generator_chain = (

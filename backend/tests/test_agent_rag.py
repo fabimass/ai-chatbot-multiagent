@@ -7,6 +7,7 @@ from backend.modules.agent_rag import AgentRag
 def config():
     return {
         "agent_name": "RAG Agent Test",
+        "agent_directive": "You are a RAG agent",
         "azure_search_endpoint": "https://mock-search-endpoint",
         "azure_search_key": "mock-key",
         "index_name": "mock-index",
@@ -48,7 +49,7 @@ def test_retrieve_context(agent_rag, test_variables):
     # Assert constructed context
     assert context == test_variables["mock_context"]
 
-def test_generate_answer(agent_rag, test_variables):
+def test_generate_answer(agent_rag, test_variables, config):
     # Mock context retrieval and LLM invocation
     agent_rag.retrieve_context = MagicMock(return_value=test_variables["mock_context"])
     agent_rag.llm.return_value = test_variables["mock_answer"]
@@ -62,6 +63,9 @@ def test_generate_answer(agent_rag, test_variables):
     # Assert that the user question and the context were used when generating an answer
     assert test_variables["mock_question"] in agent_rag.llm.call_args[0][0].messages[1].content
     assert test_variables["mock_context"] in agent_rag.llm.call_args[0][0].messages[0].content
+
+    # Assert the agent is aware of its own skills
+    assert config["agent_directive"] in agent_rag.llm.call_args[0][0].messages[0].content
 
     # Assert the final answer
     assert response == {"agent_rag": test_variables["mock_answer"]}

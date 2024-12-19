@@ -41,9 +41,9 @@ class AgentRag:
             "Never make up information that is not in the provided context nor in your list of skills." 
             "Use three sentences maximum and keep the answer concise."
             "\n\n"
-            "Context: {context}"
-            "\n\n"
             f"Your skills: {config['agent_directive']}"
+            "\n\n"
+            "Context: {context}"
         )
 
         # The prompt puts together the system prompt with the user question
