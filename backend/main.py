@@ -20,9 +20,9 @@ def initial_setup():
 
     # Agents instantiation
     agent_rag = AgentRag(rag_config)
-    print(f"{rag_config["agent_name"]} ready.")
+    print(f"{rag_config['agent_name']} ready.")
     agent_sql = AgentSql(sql_config)
-    print(f"{sql_config["agent_name"]} ready.")
+    print(f"{sql_config['agent_name']} ready.")
     agents = ["agent_rag", "agent_sql"]
 
     # Supervisor instantiation
