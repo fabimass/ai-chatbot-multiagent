@@ -35,11 +35,15 @@ class AgentRag:
         # The system prompt guides the agent on how to respond
         self.system_prompt = (
             "You are an AI assistant for question-answering tasks."
-            "Use only the following pieces of retrieved context to answer the question." 
-            "If you cannot find the answer in the context, say that you don't know." 
+            "Your skills are listed below, these skills dictate what you can answer about."
+            "Use only the following pieces of retrieved context and your knowledge about your skills to answer the question." 
+            "If you cannot find the answer, say that you don't know."
+            "Never make up information that is not in the provided context nor in your list of skills." 
             "Use three sentences maximum and keep the answer concise."
             "\n\n"
             "Context: {context}"
+            "\n\n"
+            f"Your skills: {config['agent_directive']}"
         )
 
         # The prompt puts together the system prompt with the user question
