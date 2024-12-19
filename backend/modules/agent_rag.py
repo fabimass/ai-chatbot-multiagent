@@ -59,8 +59,7 @@ class AgentRag:
             #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
             | self.prompt
             | self.llm
-            | RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
-            #| self.parser
+            | self.parser
         )
        
     def retrieve_context(self, query):
