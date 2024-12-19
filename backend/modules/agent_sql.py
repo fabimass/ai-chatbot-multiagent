@@ -113,12 +113,7 @@ class AgentSql:
 
     def get_schema(self):
         print(f"{self.name} says: retrieving database schema...")
-        schema = self.db.run("""SELECT 
-                                TABLE_SCHEMA, 
-                                TABLE_NAME,
-                                COLUMN_NAME,
-                                DATA_TYPE 
-                        FROM INFORMATION_SCHEMA.COLUMNS""")
+        schema = self.db.run("SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS")
         print(f"{self.name} says: {schema}")
         return schema
 

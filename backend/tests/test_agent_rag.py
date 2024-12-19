@@ -56,8 +56,9 @@ def test_generate_answer(agent_rag):
     # Assert that a call to retrieve context was done
     agent_rag.retrieve_context.assert_called_once_with(mock_question)
     
-    # Assert that the context was correctly injected into the system prompt
+    # Assert that the user question and the context were used when generating an answer
     assert mock_context in agent_rag.llm.call_args[0][0].messages[0].content
+    assert mock_question in agent_rag.llm.call_args[0][0].messages[1].content
 
     # Assert the final answer
     assert response == {"agent_rag": mock_answer}
