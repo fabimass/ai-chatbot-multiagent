@@ -20,7 +20,8 @@ def test_variables():
         "mock_question": "What is the capital of France?",
         "mock_relevant_docs": [MagicMock(metadata={'source': 'visit-france.pdf', 'page': 1}, page_content='France is a country in Europe. Paris is its capital.'), MagicMock(metadata={'source': 'visit-france.pdf', 'page': 3}, page_content='Paris, the beautiful french capital, is known for the Eiffel Tower and Notre Dame cathedral.')],
         "mock_context": "France is a country in Europe. Paris is its capital.\n\nParis, the beautiful french capital, is known for the Eiffel Tower and Notre Dame cathedral.",
-        "mock_answer": "The capital of France is Paris"
+        "mock_answer": "The capital of France is Paris",
+        "mock_history": [{"role": "user", "content": "hi!"}, {"role": "bot", "content": "hi! how can I help you?"}]
     }
 
 @pytest.fixture
@@ -55,7 +56,7 @@ def test_generate_answer(agent_rag, test_variables, config):
     agent_rag.llm.return_value = test_variables["mock_answer"]
 
     # Call the method under test
-    response = agent_rag.generate_answer(State({"question": test_variables["mock_question"]}))
+    response = agent_rag.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
 
     # Assert that a call to retrieve context was done
     agent_rag.retrieve_context.assert_called_once_with(test_variables["mock_question"])
@@ -66,6 +67,9 @@ def test_generate_answer(agent_rag, test_variables, config):
 
     # Assert the agent is aware of its own skills
     assert config["agent_directive"] in agent_rag.llm.call_args[0][0].messages[0].content
+
+    # Assert the agent is aware of the chat history
+    assert str(test_variables["mock_history"]) in agent_rag.llm.call_args[0][0].messages[0].content
 
     # Assert the final answer
     assert response == {"agent_rag": test_variables["mock_answer"]}

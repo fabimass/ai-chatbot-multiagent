@@ -22,12 +22,9 @@ class Supervisor:
             f"You are a supervisor tasked with managing a conversation between the following workers: {self.agents}."
             "Given the following user question, all the workers will provide a response."
             "Your task is to analyze each of the responses and provide the best possible response to the user."
-            "You are also provided with the chat history, so you are aware of previous questions and answers."
-            "Do not make up new information that is not explicitly in the workers response nor in the chat history."
+            "Do not make up new information that is not explicitly in the workers response."
             "\n\n"
             "Workers response: {agents_output}"
-            "\n\n"
-            "Chat history: {history}"
         )
 
         # The prompt puts together the system prompt with the user question
@@ -43,7 +40,7 @@ class Supervisor:
 
         # The chain orchestrates the whole flow
         self.rag_chain = (
-            {"question": RunnableLambda(lambda inputs: inputs["question"]), "agents_output": RunnableLambda(lambda inputs: inputs["agents_output"]), "history": RunnableLambda(lambda inputs: inputs["history"])}
+            { "question": RunnableLambda(lambda inputs: inputs["question"]), "agents_output": RunnableLambda(lambda inputs: inputs["agents_output"]) }
             #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
             | self.prompt
             | self.llm
@@ -60,5 +57,5 @@ class Supervisor:
     def summarize(self, state: State):
         print("Summarizing...")
         agents_output = {key: state[key] for key in self.agents if key in state}
-        answer = self.rag_chain.invoke({"question": state["question"], "agents_output": agents_output, "history": state["history"]})
+        answer = self.rag_chain.invoke({ "question": state["question"], "agents_output": agents_output })
         return { "answer": answer }

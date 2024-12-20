@@ -44,6 +44,8 @@ class AgentRag:
             f"Your skills: {config['agent_directive']}"
             "\n\n"
             "Context: {context}"
+            "\n\n"
+            "Chat history: {history}"
         )
 
         # The prompt puts together the system prompt with the user question
@@ -59,7 +61,7 @@ class AgentRag:
 
         # The chain orchestrates the whole flow
         self.rag_chain = (
-            { "question": RunnableLambda(lambda inputs: inputs["question"]), "context": RunnableLambda(lambda inputs: inputs["context"]) }
+            { "question": RunnableLambda(lambda inputs: inputs["question"]), "context": RunnableLambda(lambda inputs: inputs["context"]), "history": RunnableLambda(lambda inputs: inputs["history"]) }
             #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
             | self.prompt
             | self.llm
@@ -80,6 +82,6 @@ class AgentRag:
         context = self.retrieve_context(state['question'])
         
         print(f"{self.name} says: generating answer...")
-        answer = self.rag_chain.invoke({"question": state["question"], "context": context})
+        answer = self.rag_chain.invoke({"question": state["question"], "context": context, "history": state["history"]})
         print(f"{self.name} says: {answer}")
         return { "agent_rag": answer }

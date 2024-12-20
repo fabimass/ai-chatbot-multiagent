@@ -44,10 +44,12 @@ class AgentSql:
             "- Pay attention to use only the column names that you can see in the schema description. Be careful to not query for columns that do not exist. Also, pay attention to which column is in which table."
             "\n\n"
             "Schema description (TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, DATA_TYPE): {schema}"
+            "\n\n"
+            "Chat history: {history}"
         )
 
         self.query_generator_chain = (
-            { "question": RunnableLambda(lambda inputs: inputs["question"]), "schema": RunnableLambda(lambda inputs: inputs["schema"]) }
+            { "question": RunnableLambda(lambda inputs: inputs["question"]), "schema": RunnableLambda(lambda inputs: inputs["schema"]), "history": RunnableLambda(lambda inputs: inputs["history"]) }
             #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
             | RunnableLambda(lambda inputs: self.prompt({"system_prompt": self.query_generator_prompt, "human_prompt": inputs["question"]}))
             | self.llm
@@ -93,10 +95,12 @@ class AgentSql:
             "SQL query: {query}"
             "\n\n"
             "SQL result: {result}"
+            "\n\n"
+            "Chat history: {history}"
         )
 
         self.answer_generator_chain = (
-            { "question": RunnableLambda(lambda inputs: inputs["question"]), "query": RunnableLambda(lambda inputs: inputs["query"]), "result": RunnableLambda(lambda inputs: inputs["result"]) }
+            { "question": RunnableLambda(lambda inputs: inputs["question"]), "query": RunnableLambda(lambda inputs: inputs["query"]), "result": RunnableLambda(lambda inputs: inputs["result"]), "history": RunnableLambda(lambda inputs: inputs["history"]) }
             #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
             | RunnableLambda(lambda inputs: self.prompt({"system_prompt": self.answer_generator_prompt, "human_prompt": inputs["question"]}))
             | self.llm
@@ -125,9 +129,9 @@ class AgentSql:
         print(f"{self.name} says: {schema}")
         return schema
 
-    def generate_query(self, question, schema):
+    def generate_query(self, question, schema, history):
         print(f"{self.name} says: generating query...")
-        query = self.query_generator_chain.invoke({"question": question, "schema": schema})
+        query = self.query_generator_chain.invoke({"question": question, "schema": schema, "history": history})
         print(f"{self.name} says: {query}")
 
         print(f"{self.name} says: reviewing query...")
@@ -157,12 +161,12 @@ class AgentSql:
             # Get tables and columns from the database
             schema = self.get_schema()
             # Construct a SQL query
-            query = self.generate_query(state['question'], schema)
+            query = self.generate_query(state['question'], schema, state["history"])
             # Execute the query
             result = self.run_query(query)
             # Finally answer the question
             print(f"{self.name} says: generating answer...")
-            answer = self.answer_generator_chain.invoke({"question": state["question"], "query": query, "result": result})
+            answer = self.answer_generator_chain.invoke({"question": state["question"], "query": query, "result": result, "history": state["history"]})
             print(f"{self.name} says: {answer}")
             return { "agent_sql": answer }
         
