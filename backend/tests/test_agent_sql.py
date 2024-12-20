@@ -23,7 +23,8 @@ def test_variables():
         "mock_fixed_query": "```sql\nSELECT TOP(5) name\nFROM users;\n```",
         "mock_cleaned_query": "SELECT TOP(5) name FROM users;",
         "mock_query_result": [("Alice"), ("Bob")],
-        "mock_answer": "The users are Alice and Bob"
+        "mock_answer": "The users are Alice and Bob",
+        "mock_history": [{"role": "user", "content": "hi!"}, {"role": "bot", "content": "hi! how can I help you?"}]
     }
 
 @pytest.fixture
@@ -58,7 +59,7 @@ def test_generate_query(agent_sql, test_variables):
     agent_sql.llm.side_effect = [test_variables["mock_raw_query"], test_variables["mock_fixed_query"]]
     
     # Call the method under test
-    generated_query = agent_sql.generate_query(test_variables["mock_question"], test_variables["mock_schema"])
+    generated_query = agent_sql.generate_query(test_variables["mock_question"], test_variables["mock_schema"], test_variables["mock_history"])
     
     # Assert that the user question and the schema were used when generating the query
     assert test_variables["mock_question"] in agent_sql.llm.call_args_list[0][0][0].messages[1].content
@@ -66,6 +67,9 @@ def test_generate_query(agent_sql, test_variables):
 
     # Assert that the previously generated query was used when looking for mistakes
     assert test_variables["mock_raw_query"] in agent_sql.llm.call_args_list[1][0][0].messages[1].content
+
+    # Assert the agent is aware of the chat history
+    assert str(test_variables["mock_history"]) in agent_sql.llm.call_args_list[0][0][0].messages[0].content
 
     # Assert generated query
     assert generated_query == test_variables["mock_cleaned_query"]
@@ -91,7 +95,7 @@ def test_generate_answer(agent_sql, test_variables, config):
     agent_sql.llm.return_value = test_variables["mock_answer"]
     
     # Call the method under test
-    answer = agent_sql.generate_answer(State({"question": test_variables["mock_question"]}))
+    answer = agent_sql.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
 
     # Assert that the user question, the generated query and the query result were used when generating an answer
     assert test_variables["mock_question"] in agent_sql.llm.call_args[0][0].messages[1].content
@@ -101,5 +105,8 @@ def test_generate_answer(agent_sql, test_variables, config):
     # Assert the agent is aware of its own skills
     assert config["agent_directive"] in agent_sql.llm.call_args[0][0].messages[0].content
     
+    # Assert the agent is aware of the chat history
+    assert str(test_variables["mock_history"]) in agent_sql.llm.call_args[0][0].messages[0].content
+
     # Assert the final answer
     assert answer == {"agent_sql": test_variables["mock_answer"]}
