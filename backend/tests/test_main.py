@@ -32,23 +32,37 @@ class MockEntity(dict):
         super().__init__(*args, **kwargs)
         self.__dict__ = self
 
-#def test_generate_answer(mock_setup):
-#    mock_question = "What is the capital of France?"
-#    mock_answer = "This is a test answer"
-#    mock_graph = mock_setup["graph"]
-#    mock_graph.invoke.return_value = { "question": mock_question, "answer": mock_answer, "agent_1": "agent answer", "agent_2": "agent answer"}
-#
-#    # Call the endpoint under test
-#    response = generate_answer(body=QuestionModel(session_id="1234", question=mock_question), setup=mock_setup)
-#
-#    # Assert the the returned value has the final answer
-#    assert "answer" in response
-#    assert response["answer"] == mock_answer
-#
-#    # Assert that the returned value has the agents answer
-#    assert "agents" in response
-#    assert "agent_1" in response["agents"]
-#    assert "agent_2" in response["agents"]
+def test_generate_answer(mock_setup):
+    mock_question = "What is the capital of France?"
+    mock_answer = "This is a test answer"
+    mock_history = [{"role": "user", "content": "hi!"}, {"role": "bot", "content": "hi! how can I help you?"}]
+    mock_session_id = "1234"
+    mock_graph = mock_setup["graph"]
+    mock_graph.invoke.return_value = { "question": mock_question, "answer": mock_answer, "agent_1": "agent answer", "agent_2": "agent answer" }
+    
+    # Mock the interactions with the chat history
+    with patch('backend.main.get_chat_history') as MockGetChatHistory, \
+         patch('backend.main.add_to_chat_history') as MockAddToChatHistory:
+        MockGetChatHistory.return_value = mock_history
+        MockAddToChatHistory.return_value = None
+
+        # Call the endpoint under test
+        response = generate_answer(body=QuestionModel(session_id=mock_session_id, question=mock_question), setup=mock_setup)
+
+        # Assert that the returned value has the final answer
+        assert "answer" in response
+        assert response["answer"] == mock_answer
+
+        # Assert that the returned value has each of the agents answer
+        assert "agents" in response
+        assert "agent_1" in response["agents"]
+        assert "agent_2" in response["agents"]
+
+        # Assert that a call to retrieve the chat history was made
+        MockGetChatHistory.assert_called_once()
+
+        # Assert that a call to store the new chat in the history was made
+        MockAddToChatHistory.assert_called_once()        
 
 def test_store_feedback(mock_setup, mock_feedback):
     with patch('backend.main.uuid') as MockId:
