@@ -1,13 +1,13 @@
-from http.client import HTTPException
+import os
 import uuid
+from http.client import HTTPException
 from fastapi import FastAPI, Depends
 from backend.config import rag_config, sql_config
 from backend.modules.models import QuestionModel, AnswerModel, FeedbackModel, State
 from backend.modules.agent_rag import AgentRag
 from backend.modules.agent_sql import AgentSql
 from backend.modules.supervisor import Supervisor
-from backend.modules.utils import get_table_client
-from azure.data.tables import TableEntity
+from azure.data.tables import TableServiceClient, TableEntity
 from langchain_core.runnables import RunnableLambda
 from langgraph.graph import StateGraph
 
@@ -47,9 +47,10 @@ def initial_setup():
     print("Graph ready.")
 
     # Tables instantiation
-    feedback_table = get_table_client("Feedback")
+    table_service = TableServiceClient.from_connection_string(conn_str=os.getenv("AZURE_STORAGE_CONNECTION_STRING"))
+    feedback_table = table_service.get_table_client("Feedback")
     print("Feedback table client ready.")
-    history_table = get_table_client("ChatHistory")
+    history_table = table_service.get_table_client("ChatHistory")
     print("History table client ready.") 
     
     return { "graph": graph, "feedback_table": feedback_table, "history_table": history_table }
