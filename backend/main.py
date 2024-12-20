@@ -11,6 +11,10 @@ from azure.data.tables import TableServiceClient, TableEntity
 from langchain_core.runnables import RunnableLambda
 from langgraph.graph import StateGraph
 
+import pandas as pd
+from pathlib import Path
+import numpy as np
+CSV_DIRECTORY = Path(__file__).parent / "csv"
 
 # Entry point to use FastAPI
 app = FastAPI()
@@ -189,3 +193,20 @@ def delete_chat_history(session_id, setup: dict = Depends(get_setup)):
         )
         count += 1
     return {"message": f"Deleted {count} records successfully."}
+
+@app.get("/api/csv")
+def get_csv():
+    print(CSV_DIRECTORY)
+    file_path = CSV_DIRECTORY / "titanic.csv"
+    print(file_path)
+    
+    # Check if the file exists
+    if not file_path.exists() or not file_path.is_file():
+        raise HTTPException(status_code=404, detail="CSV file not found")
+    
+    try:
+        # Read the first 5 rows of the CSV
+        df = pd.read_csv(file_path, nrows=5)
+        return {"rows": df.fillna(0).to_dict(orient="records")}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading CSV file: {e}")

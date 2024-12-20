@@ -12,3 +12,4 @@ azure-data-tables==12.5.0
 pyodbc==5.2.0
 pytest==8.3.3
 pytest-mock==3.14.0
+pandas==2.2.3
