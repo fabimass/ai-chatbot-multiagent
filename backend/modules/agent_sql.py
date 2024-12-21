@@ -57,7 +57,7 @@ class AgentSql:
         )
 
         # A prompt to double check the generated query and adjust if needed
-        self.query_corrector_prompt = (
+        self.query_reviewer_prompt = (
             "You are a SQL expert with a strong attention to detail."
             "Double check the SQL query for common mistakes, including:"
             "- Using NOT IN with NULL values"
@@ -73,10 +73,10 @@ class AgentSql:
             "Respond only with the rewritten query or the original query, nothing else."
         )
 
-        self.query_corrector_chain = (
+        self.query_reviewer_chain = (
             { "query": RunnablePassthrough() }
             #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
-            | RunnableLambda(lambda inputs: self.prompt({"system_prompt": self.query_corrector_prompt, "human_prompt": inputs["query"]}))
+            | RunnableLambda(lambda inputs: self.prompt({"system_prompt": self.query_reviewer_prompt, "human_prompt": inputs["query"]}))
             | self.llm
             | self.parser
         )
@@ -139,10 +139,10 @@ class AgentSql:
         print(f"{self.name} says: {query}")
 
         print(f"{self.name} says: reviewing query...")
-        corrected_query = self.query_corrector_chain.invoke(query)
-        print(f"{self.name} says: {corrected_query}")
+        reviewed_query = self.query_reviewer_chain.invoke(query)
+        print(f"{self.name} says: {reviewed_query}")
 
-        cleaned_query = re.sub(r"^```sql\n", "", corrected_query)  # Remove start markdown
+        cleaned_query = re.sub(r"^```sql\n", "", reviewed_query)  # Remove start markdown
         cleaned_query = re.sub(r"\n```$", "", cleaned_query)  # Remove end markdown
         cleaned_query = re.sub(r"\n", " ", cleaned_query) # Replace new line with space
         cleaned_query = cleaned_query.strip() # Remove leading and trailing whitespace (just in case)   

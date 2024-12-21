@@ -2,7 +2,7 @@ from .models import State
 from langchain_openai import AzureChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnableLambda
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from azure.storage.blob import BlobServiceClient
 from io import StringIO
 import re
@@ -85,6 +85,24 @@ class AgentCsv:
             | self.parser
         )
 
+        # A prompt to double check the generated code and adjust if needed
+        self.code_reviewer_prompt = (
+            "You are a Python expert with a strong attention to detail."
+            "Double check the Python code for common mistakes."
+            "Ensure the final result is assigned to a variable called 'result'."
+            "Ensure the code is executable."
+            "If you see any mistakes, rewrite the code. If there are no mistakes, just reproduce the original code."
+            "Respond only with the rewritten code or the original code, nothing else."
+        )
+
+        self.code_reviewer_chain = (
+            { "code": RunnablePassthrough() }
+            #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
+            | RunnableLambda(lambda inputs: self.prompt({"system_prompt": self.code_reviewer_prompt, "human_prompt": inputs["code"]}))
+            | self.llm
+            | self.parser
+        )
+
         # A prompt to generate an answer to the question given the information pulled from the database
         self.answer_generator_prompt = (
             "You are an AI assistant for question-answering tasks."
@@ -146,8 +164,12 @@ class AgentCsv:
         print(f"{self.name} says: generating code...")
         code = self.code_generator_chain.invoke({"question": question, "context": context, "history": history})
         print(f"{self.name} says: {code}")
+
+        print(f"{self.name} says: reviewing code...")
+        reviewed_code = self.code_reviewer_chain.invoke(code)
+        print(f"{self.name} says: {reviewed_code}")
         
-        cleaned_code = re.sub(r"^```python\n", "", code)  # Remove start markdown
+        cleaned_code = re.sub(r"^```python\n", "", reviewed_code)  # Remove start markdown
         cleaned_code = re.sub(r"\n```$", "", cleaned_code)  # Remove end markdown
         return cleaned_code
     
