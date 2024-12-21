@@ -73,7 +73,7 @@ class AgentCsv:
             "\n\n"
             "Use the following function to load csv files:"
             """```python
-            def load_csv_file(file_name, blob_container):
+            def load_csv_file(file_name, blob_container, blob_service_client):
                 blob_client = blob_service_client.get_blob_client(container=blob_container, blob=file_name)
                 blob_data = blob_client.download_blob().content_as_text()
                 csv_data = StringIO(blob_data)
@@ -183,10 +183,9 @@ class AgentCsv:
         return cleaned_code
     
     def run_code(self, code):
-        safe_globals = {}
         safe_locals = {}
         print(f"{self.name} says: executing code...")
-        exec(code, safe_globals, safe_locals)
+        exec(code, globals(), safe_locals)
         result = safe_locals['result']
         print(f"{self.name} says: {result}")
         return result
