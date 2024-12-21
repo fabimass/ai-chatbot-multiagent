@@ -109,9 +109,13 @@ class AgentSql:
 
     def connect(self):
         print(f"{self.name} says: connecting to database...")
-        db = SQLDatabase.from_uri(self.db_uri)
-        print(f"{self.name} says: connection established.")
-        return db
+        try:
+            db = SQLDatabase.from_uri(self.db_uri)
+            print(f"{self.name} says: connection established.")
+            return db
+        except Exception as e:
+            print(f"{self.name} says: connection failed!")
+            return None
 
     def check_connection(self):
         print(f"{self.name} says: checking connection to database...")
