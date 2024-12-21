@@ -1,4 +1,4 @@
-from backend.modules.models import State
+from .models import State
 from langchain_openai import AzureChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -150,7 +150,10 @@ class AgentSql:
     
     def run_query(self, query):
         print(f"{self.name} says: executing query...")
-        result = self.db.run(query)
+        try:
+            result = self.db.run(query)
+        except Exception as e:
+            result = f"ERROR {e}"
         print(f"{self.name} says: {result}")
         return result
     

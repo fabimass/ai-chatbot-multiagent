@@ -17,3 +17,11 @@ sql_config = {
     "agent_directive": "You are able to answer questions related to AdventureWorks database, which contains sample data for e-commerce scenarios, showcasing sales and product management.",
     "connection_string": f"mssql+pyodbc://{os.getenv('SQL_USERNAME')}:{os.getenv('SQL_PASSWORD')}@{os.getenv('SQL_SERVER')}:1433/{os.getenv('SQL_DATABASE')}?driver=ODBC+Driver+18+for+SQL+Server"
 }
+
+csv_config = {
+    "agent_name": "CSV Agent",
+    "agent_directive": "You are able to answer questions related to a collection of CSV files, which contains data from DC and Marvel characters.",
+    "connection_string": os.getenv("AZURE_STORAGE_CONNECTION_STRING"),
+    "container_name": "csv",
+    "index_file_name": "index.csv"
+}

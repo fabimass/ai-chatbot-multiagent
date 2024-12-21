@@ -17,5 +17,6 @@ class State(TypedDict):
     question: str
     agent_rag: str
     agent_sql: str
+    agent_csv: str
     answer: str
     history: list

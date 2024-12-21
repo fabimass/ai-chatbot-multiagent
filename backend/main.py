@@ -2,19 +2,16 @@ import os
 import uuid
 from http.client import HTTPException
 from fastapi import FastAPI, Depends
-from backend.config import rag_config, sql_config
-from backend.modules.models import QuestionModel, AnswerModel, FeedbackModel, State
-from backend.modules.agent_rag import AgentRag
-from backend.modules.agent_sql import AgentSql
-from backend.modules.supervisor import Supervisor
+from .config import rag_config, sql_config, csv_config
+from .modules.models import QuestionModel, AnswerModel, FeedbackModel, State
+from .modules.agent_rag import AgentRag
+from .modules.agent_sql import AgentSql
+from .modules.agent_csv import AgentCsv
+from .modules.supervisor import Supervisor
 from azure.data.tables import TableServiceClient, TableEntity
 from langchain_core.runnables import RunnableLambda
 from langgraph.graph import StateGraph
 
-import pandas as pd
-from pathlib import Path
-import numpy as np
-CSV_DIRECTORY = Path(__file__).parent / "csv"
 
 # Entry point to use FastAPI
 app = FastAPI()
@@ -27,7 +24,9 @@ def initial_setup():
     print(f"{rag_config['agent_name']} ready.")
     agent_sql = AgentSql(sql_config)
     print(f"{sql_config['agent_name']} ready.")
-    agents = ["agent_rag", "agent_sql"]
+    agent_csv = AgentCsv(csv_config)
+    print(f"{csv_config['agent_name']} ready.")
+    agents = ["agent_rag", "agent_sql", "agent_csv"]
 
     # Supervisor instantiation
     supervisor = Supervisor(agents)
@@ -39,13 +38,15 @@ def initial_setup():
     builder.add_node("summarizer_node", supervisor.summarize)
     builder.add_node("rag_node", agent_rag.generate_answer)
     builder.add_node("sql_node", agent_sql.generate_answer)
+    builder.add_node("csv_node", agent_csv.generate_answer)
     builder.add_conditional_edges(
         "supervisor_node",
         RunnableLambda(lambda inputs: inputs["next"]),  
-        {"agent_rag": "rag_node", "agent_sql": "sql_node", "FINISH": "summarizer_node"}
+        {"agent_rag": "rag_node", "agent_sql": "sql_node", "agent_csv": "csv_node", "FINISH": "summarizer_node"}
     )
     builder.add_edge("rag_node", "supervisor_node")
     builder.add_edge("sql_node", "supervisor_node")
+    builder.add_edge("csv_node", "supervisor_node")
     builder.set_entry_point("supervisor_node")
     graph = builder.compile()
     print("Graph ready.")
@@ -193,20 +194,3 @@ def delete_chat_history(session_id, setup: dict = Depends(get_setup)):
         )
         count += 1
     return {"message": f"Deleted {count} records successfully."}
-
-@app.get("/api/csv")
-def get_csv():
-    print(CSV_DIRECTORY)
-    file_path = CSV_DIRECTORY / "titanic.csv"
-    print(file_path)
-    
-    # Check if the file exists
-    if not file_path.exists() or not file_path.is_file():
-        raise HTTPException(status_code=404, detail="CSV file not found")
-    
-    try:
-        # Read the first 5 rows of the CSV
-        df = pd.read_csv(file_path, nrows=5)
-        return {"rows": df.fillna(0).to_dict(orient="records")}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error reading CSV file: {e}")
