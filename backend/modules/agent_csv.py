@@ -17,7 +17,7 @@ class AgentCsv:
         self.connection_string = config["connection_string"]
         print(f"{self.name} says: connecting to Azure Blob Storage...")
         self.blob_service_client = BlobServiceClient.from_connection_string(self.connection_string)
-        print(f"{self.name} says: connection estabished.")
+        print(f"{self.name} says: connection established.")
         
         # LLM instantiation
         self.llm = AzureChatOpenAI(
@@ -36,7 +36,7 @@ class AgentCsv:
         # The parser just plucks the string content out of the LLM's output message
         self.parser = StrOutputParser()
 
-        # A prompt to generate a SQL query from a user question
+        # A prompt to select the most relevant files based on a user question and an index
         self.file_selector_prompt = (
             "You are a file selector."
             "Given an input question and an index, provide a list with the most relevant files."
