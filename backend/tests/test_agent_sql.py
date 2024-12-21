@@ -85,7 +85,7 @@ def test_run_query(agent_sql, test_variables):
     assert result == test_variables["mock_query_result"]
     agent_sql.db.run.assert_called_once_with(test_variables["mock_cleaned_query"])
 
-def test_generate_answer(agent_sql, test_variables, config):
+def test_generate_answer_success(agent_sql, test_variables, config):
     # Mock already tested methods
     agent_sql.get_schema = MagicMock(return_value=test_variables["mock_schema"])
     agent_sql.generate_query = MagicMock(return_value=test_variables["mock_cleaned_query"])
@@ -110,3 +110,11 @@ def test_generate_answer(agent_sql, test_variables, config):
 
     # Assert the final answer
     assert answer == {"agent_sql": test_variables["mock_answer"]}
+
+def test_generate_answer_error(agent_sql, test_variables):
+    # Mock to raise an error
+    agent_sql.get_schema = MagicMock(side_effect=Exception("Mocked exception"))
+
+    response = agent_sql.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
+
+    assert response == {"agent_sql": "I don't know"}

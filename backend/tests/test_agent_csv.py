@@ -116,7 +116,7 @@ def test_run_code(agent_csv, test_variables):
     # Assertions to verify expected behavior
     assert result == test_variables["mock_code_result"]
 
-def test_generate_answer(agent_csv, test_variables, config):
+def test_generate_answer_success(agent_csv, test_variables, config):
     # Mock already tested methods
     agent_csv.get_index = MagicMock(return_value=test_variables["mock_index"])
     agent_csv.get_relevant_files = MagicMock(return_value=test_variables["mock_relevant_files"])
@@ -143,3 +143,11 @@ def test_generate_answer(agent_csv, test_variables, config):
 
     # Assert the final answer
     assert answer == {"agent_csv": test_variables["mock_answer"]}
+
+def test_generate_answer_error(agent_csv, test_variables):
+    # Mock to raise an error
+    agent_csv.get_index = MagicMock(side_effect=Exception("Mocked exception"))
+
+    response = agent_csv.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
+
+    assert response == {"agent_csv": "I don't know"}

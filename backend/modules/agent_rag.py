@@ -78,10 +78,15 @@ class AgentRag:
     def generate_answer(self, state: State):
         print(f"{self.name} says: received question '{state['question']}'")
 
-        # Retrieve the most relevant documents from the vector store
-        context = self.retrieve_context(state['question'])
+        try:
+            # Retrieve the most relevant documents from the vector store
+            context = self.retrieve_context(state['question'])
+            
+            print(f"{self.name} says: generating answer...")
+            answer = self.rag_chain.invoke({"question": state["question"], "context": context, "history": state["history"]})
+            print(f"{self.name} says: {answer}")
+            return { "agent_rag": answer }
         
-        print(f"{self.name} says: generating answer...")
-        answer = self.rag_chain.invoke({"question": state["question"], "context": context, "history": state["history"]})
-        print(f"{self.name} says: {answer}")
-        return { "agent_rag": answer }
+        except Exception as e:
+            print(f"{self.name} says: ERROR {e}")
+            return { "agent_rag": f"I don't know" }

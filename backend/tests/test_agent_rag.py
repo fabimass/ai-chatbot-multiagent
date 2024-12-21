@@ -37,6 +37,24 @@ def agent_rag(config):
         
         return AgentRag(config)
 
+def test_embeddings_initialization(config):
+    # Test initialization with different embeddings configurations
+    with patch('modules.agent_rag.AzureOpenAIEmbeddings') as MockOpenAIEmbeddings, \
+         patch('modules.agent_rag.GoogleGenerativeAIEmbeddings') as MockGoogleEmbeddings, \
+         patch('modules.agent_rag.AzureSearch') as MockAzureSearch, \
+         patch('modules.agent_rag.AzureChatOpenAI') as MockLLM:
+        
+        # Test with OpenAI embeddings
+        agent = AgentRag(config)
+        MockOpenAIEmbeddings.assert_called_once_with(model="ada-002", openai_api_version="2024-06-01")
+        assert isinstance(agent.embeddings, MagicMock)
+
+        # Test with Google embeddings
+        config["embeddings"] = "google"
+        agent = AgentRag(config)
+        MockGoogleEmbeddings.assert_called_once_with(model="models/embedding-001")
+        assert isinstance(agent.embeddings, MagicMock)
+
 def test_retrieve_context(agent_rag, test_variables):    
     # Mock similarity search results
     agent_rag.vstore.similarity_search.return_value = test_variables["mock_relevant_docs"]
@@ -50,7 +68,7 @@ def test_retrieve_context(agent_rag, test_variables):
     # Assert constructed context
     assert context == test_variables["mock_context"]
 
-def test_generate_answer(agent_rag, test_variables, config):
+def test_generate_answer_success(agent_rag, test_variables, config):
     # Mock context retrieval and LLM invocation
     agent_rag.retrieve_context = MagicMock(return_value=test_variables["mock_context"])
     agent_rag.llm.return_value = test_variables["mock_answer"]
@@ -74,20 +92,10 @@ def test_generate_answer(agent_rag, test_variables, config):
     # Assert the final answer
     assert response == {"agent_rag": test_variables["mock_answer"]}
 
-def test_embeddings_initialization(config):
-    # Test initialization with different embeddings configurations
-    with patch('modules.agent_rag.AzureOpenAIEmbeddings') as MockOpenAIEmbeddings, \
-         patch('modules.agent_rag.GoogleGenerativeAIEmbeddings') as MockGoogleEmbeddings, \
-         patch('modules.agent_rag.AzureSearch') as MockAzureSearch, \
-         patch('modules.agent_rag.AzureChatOpenAI') as MockLLM:
-        
-        # Test with OpenAI embeddings
-        agent = AgentRag(config)
-        MockOpenAIEmbeddings.assert_called_once_with(model="ada-002", openai_api_version="2024-06-01")
-        assert isinstance(agent.embeddings, MagicMock)
+def test_generate_answer_error(agent_rag, test_variables):
+    # Mock to raise an error
+    agent_rag.retrieve_context = MagicMock(side_effect=Exception("Mocked exception"))
 
-        # Test with Google embeddings
-        config["embeddings"] = "google"
-        agent = AgentRag(config)
-        MockGoogleEmbeddings.assert_called_once_with(model="models/embedding-001")
-        assert isinstance(agent.embeddings, MagicMock)
+    response = agent_rag.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
+
+    assert response == {"agent_rag": "I don't know"}
