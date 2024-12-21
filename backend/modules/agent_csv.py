@@ -186,11 +186,8 @@ class AgentCsv:
         safe_globals = {}
         safe_locals = {}
         print(f"{self.name} says: executing code...")
-        try:
-            exec(code, safe_globals, safe_locals)
-            result = safe_locals['result']
-        except Exception as e:
-            result = f"ERROR {e}"
+        exec(code, safe_globals, safe_locals)
+        result = safe_locals['result']
         print(f"{self.name} says: {result}")
         return result
     

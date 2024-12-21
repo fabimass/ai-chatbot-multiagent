@@ -113,7 +113,7 @@ class AgentSql:
             db = SQLDatabase.from_uri(self.db_uri)
             print(f"{self.name} says: connection established.")
             return db
-        except Exception as e:
+        except:
             print(f"{self.name} says: connection failed!")
             return None
 
@@ -123,7 +123,7 @@ class AgentSql:
             self.db.run("""SELECT 1""")
             print(f"{self.name} says: connection up and running.")
             return True
-        except Exception as e:
+        except:
             print(f"{self.name} says: there is no open connection.")
             return False
 
@@ -150,10 +150,7 @@ class AgentSql:
     
     def run_query(self, query):
         print(f"{self.name} says: executing query...")
-        try:
-            result = self.db.run(query)
-        except Exception as e:
-            result = f"ERROR {e}"
+        result = self.db.run(query)
         print(f"{self.name} says: {result}")
         return result
     
