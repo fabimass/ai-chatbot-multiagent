@@ -64,13 +64,22 @@ class AgentCsv:
             "When generating the code:"
             "- Understand the context: analyze the user's question and the CSV data provided to infer the structure and relevant fields." 
             "- Use pandas library to load, manipulate, and analyze the data."
-            "- Avoid unnecessary dependencies, use only pandas and Python's standard libraries."
             "- Handle edge cases such as missing values or empty datasets gracefully." 
             "- Ensure the code is executable."
             "- ALWAYS assign the final result to a variable called 'result'"
             "- DO NOT attempt to modify the data in the csv files."
             "\n\n"
             f"CSV files location: Azure storage account. Container name: {self.container_name}. Connection string: {self.connection_string}"
+            "\n\n"
+            "Use the following function to load csv files:"
+            """```python
+            def load_csv_file(file_name, blob_container):
+                blob_client = blob_service_client.get_blob_client(container=blob_container, blob=file_name)
+                blob_data = blob_client.download_blob().content_as_text()
+                csv_data = StringIO(blob_data)
+                return pd.read_csv(csv_data)
+            ```
+            """
             "\n\n"
             "Context: {context}"
             "\n\n"
