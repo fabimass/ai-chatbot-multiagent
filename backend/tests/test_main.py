@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch, call
-from backend.main import generate_answer, store_feedback, get_feedback_count, get_chat_history, add_to_chat_history, delete_chat_history
-from backend.modules.models import QuestionModel, AnswerModel, FeedbackModel
+from main import generate_answer, store_feedback, get_feedback_count, get_chat_history, add_to_chat_history, delete_chat_history
+from modules.models import QuestionModel, AnswerModel, FeedbackModel
 from datetime import datetime
 
 
@@ -41,8 +41,8 @@ def test_generate_answer(mock_setup):
     mock_graph.invoke.return_value = { "question": mock_question, "answer": mock_answer, "agent_1": "agent answer", "agent_2": "agent answer" }
     
     # Mock the interactions with the chat history
-    with patch('backend.main.get_chat_history') as MockGetChatHistory, \
-         patch('backend.main.add_to_chat_history') as MockAddToChatHistory:
+    with patch('main.get_chat_history') as MockGetChatHistory, \
+         patch('main.add_to_chat_history') as MockAddToChatHistory:
         MockGetChatHistory.return_value = mock_history
         MockAddToChatHistory.return_value = None
 
@@ -65,7 +65,7 @@ def test_generate_answer(mock_setup):
         MockAddToChatHistory.assert_called_once()        
 
 def test_store_feedback(mock_setup, mock_feedback):
-    with patch('backend.main.uuid') as MockId:
+    with patch('main.uuid') as MockId:
         mock_feedback_table = mock_setup["feedback_table"]
         mock_entity = MockEntity(PartitionKey="likes", RowKey="1", Question=mock_feedback.question, Answer=mock_feedback.answer, SessionId=mock_feedback.session_id)
 
@@ -155,7 +155,7 @@ def test_get_chat_history(mock_setup):
     assert len(response) == 0
 
 def test_add_to_chat_history(mock_setup, mock_answer):
-    with patch('backend.main.uuid') as MockId:  
+    with patch('main.uuid') as MockId:  
         mock_history_table = mock_setup["history_table"]
         mock_user = MockEntity(PartitionKey=mock_answer.session_id, RowKey="123", role="user", content=mock_answer.question)
         mock_bot = MockEntity(PartitionKey=mock_answer.session_id, RowKey="123", role="bot", content=mock_answer.answer)

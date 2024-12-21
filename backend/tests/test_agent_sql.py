@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from backend.modules.models import State
-from backend.modules.agent_sql import AgentSql
+from modules.models import State
+from modules.agent_sql import AgentSql
 
 @pytest.fixture
 def config():
@@ -29,8 +29,8 @@ def test_variables():
 
 @pytest.fixture
 def agent_sql(config):
-    with patch('backend.modules.agent_sql.SQLDatabase') as MockSQL, \
-         patch('backend.modules.agent_sql.AzureChatOpenAI') as MockLLM:
+    with patch('modules.agent_sql.SQLDatabase') as MockSQL, \
+         patch('modules.agent_sql.AzureChatOpenAI') as MockLLM:
         
         # Mock the SQL connection and LLM
         MockSQL.return_value = MagicMock(from_uri=MagicMock())

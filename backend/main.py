@@ -2,12 +2,12 @@ import os
 import uuid
 from http.client import HTTPException
 from fastapi import FastAPI, Depends
-from .config import rag_config, sql_config, csv_config
-from .modules.models import QuestionModel, AnswerModel, FeedbackModel, State
-from .modules.agent_rag import AgentRag
-from .modules.agent_sql import AgentSql
-from .modules.agent_csv import AgentCsv
-from .modules.supervisor import Supervisor
+from config import rag_config, sql_config, csv_config
+from modules.models import QuestionModel, AnswerModel, FeedbackModel, State
+from modules.agent_rag import AgentRag
+from modules.agent_sql import AgentSql
+from modules.agent_csv import AgentCsv
+from modules.supervisor import Supervisor
 from azure.data.tables import TableServiceClient, TableEntity
 from langchain_core.runnables import RunnableLambda
 from langgraph.graph import StateGraph

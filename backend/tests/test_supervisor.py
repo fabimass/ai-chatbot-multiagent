@@ -1,11 +1,11 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from backend.modules.models import State
-from backend.modules.supervisor import Supervisor
+from modules.models import State
+from modules.supervisor import Supervisor
 
 @pytest.fixture
 def supervisor():
-    with patch('backend.modules.supervisor.AzureChatOpenAI') as MockLLM:
+    with patch('modules.supervisor.AzureChatOpenAI') as MockLLM:
         # Mock the LLM
         MockLLM.return_value = MagicMock()
         # Mock available agents
