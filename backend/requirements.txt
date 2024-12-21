@@ -6,6 +6,7 @@ langchain-openai==0.1.22
 langgraph==0.2.59
 azure-search-documents==11.5.1
 azure-identity==1.17.1
+azure-storage-blob==12.24.0
 langchain-google-genai==1.0.10
 uvicorn[standard]
 azure-data-tables==12.5.0
