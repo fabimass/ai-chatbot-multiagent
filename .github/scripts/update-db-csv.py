@@ -26,7 +26,7 @@ while(retries):
         print(f"Container creation failed: {e}")
         print("Retrying...")
         retries -= 1
-        time.sleep(30)
+        time.sleep(60)
 
 print(f"Discovering files in {source_folder}...")
 
