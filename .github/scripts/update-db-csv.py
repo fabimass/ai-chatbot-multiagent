@@ -14,14 +14,18 @@ container_client = blob_service_client.get_container_client(container_name)
 if container_client.exists():
     print(f"Container '{container_name}' exists. Deleting it...")
     container_client.delete_container()
-    while container_client.exists():
-        print("Waiting for the container to be deleted...")
-        time.sleep(10)
-    print(f"Container '{container_name}' deleted.")
         
 print(f"Creating container '{container_name}'...")
-container_client.create_container()
-print(f"Container '{container_name}' created.")
+retries = 5
+while(retries):
+    try:
+        container_client.create_container()
+        print(f"Container '{container_name}' created.")
+    except Exception as e:
+        print(f"Container creation failed: {e}")
+        print("Retrying...")
+        retries -= 1
+        time.sleep(30)
 
 print(f"Discovering files in {source_folder}...")
 
