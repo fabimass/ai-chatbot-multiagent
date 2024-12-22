@@ -4,7 +4,7 @@ from azure.storage.blob import BlobServiceClient
 
 connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 container_name = os.getenv("CSV_CONTAINER")
-source_folder = "knowledge_base/csv"
+source_folder = "knowledge-base/csv"
 
 # Create BlobServiceClient
 blob_service_client = BlobServiceClient.from_connection_string(connection_string)
