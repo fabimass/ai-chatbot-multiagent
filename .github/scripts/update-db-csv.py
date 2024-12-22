@@ -31,7 +31,7 @@ while(retries):
 print(f"Discovering files in {source_folder}...")
 
 # Loop through files in the source folder
-for root, dirs, files in os.listdir(source_folder):
+for root, dirs, files in os.walk(source_folder):
     for file in files:
         file_path = os.path.join(root, file)
     
