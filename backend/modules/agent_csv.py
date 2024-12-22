@@ -1,4 +1,5 @@
 from .models import State
+from .utils import filter_agent_history
 from langchain_openai import AzureChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -197,24 +198,27 @@ class AgentCsv:
             state["agents"] = {}
 
         try:
+            # Filter agent history
+            agent_history = filter_agent_history(state["history"], self.name)
+
             # Get index file
             index = self.get_index()
 
             # Get relevant files
-            relevant_files = self.get_relevant_files(state['question'], index, state["history"])
+            relevant_files = self.get_relevant_files(state['question'], index, agent_history)
             
             # Get an extract from the relevant files
             context = self.get_files_head(relevant_files)
 
             # Generate Python code to interact with the files
-            code = self.generate_code(state['question'], context, state["history"])
+            code = self.generate_code(state['question'], context, agent_history)
 
             # Execute the code
             result = self.run_code(code)
 
             # Finally answer the question
             print(f"{self.name} says: generating answer...")
-            answer = self.answer_generator_chain.invoke({"question": state["question"], "code": code, "result": result, "history": state["history"]})
+            answer = self.answer_generator_chain.invoke({"question": state["question"], "code": code, "result": result, "history": agent_history})
             print(f"{self.name} says: {answer}")
             state["agents"][f"{self.name}"] = answer
             print(state)

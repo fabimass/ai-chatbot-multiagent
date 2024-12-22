@@ -1,4 +1,5 @@
 from .models import State
+from .utils import filter_agent_history
 from langchain_openai import AzureOpenAIEmbeddings, AzureChatOpenAI
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores.azuresearch import AzureSearch
@@ -82,11 +83,14 @@ class AgentRag:
             state["agents"] = {}
 
         try:
+            # Filter agent history
+            agent_history = filter_agent_history(state["history"], self.name)
+
             # Retrieve the most relevant documents from the vector store
             context = self.retrieve_context(state['question'])
             
             print(f"{self.name} says: generating answer...")
-            answer = self.rag_chain.invoke({"question": state["question"], "context": context, "history": state["history"]})
+            answer = self.rag_chain.invoke({"question": state["question"], "context": context, "history": agent_history})
             print(f"{self.name} says: {answer}")
             state["agents"][f"{self.name}"] = answer
             return state

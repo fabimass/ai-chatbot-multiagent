@@ -1,4 +1,5 @@
 from .models import State
+from .utils import filter_agent_history
 from langchain_openai import AzureChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -165,15 +166,21 @@ class AgentSql:
             self.db = self.connect()
         
         try:
+            # Filter agent history
+            agent_history = filter_agent_history(state["history"], self.name)
+
             # Get tables and columns from the database
             schema = self.get_schema()
+
             # Construct a SQL query
-            query = self.generate_query(state['question'], schema, state["history"])
+            query = self.generate_query(state['question'], schema, agent_history)
+
             # Execute the query
             result = self.run_query(query)
+
             # Finally answer the question
             print(f"{self.name} says: generating answer...")
-            answer = self.answer_generator_chain.invoke({"question": state["question"], "query": query, "result": result, "history": state["history"]})
+            answer = self.answer_generator_chain.invoke({"question": state["question"], "query": query, "result": result, "history": agent_history})
             print(f"{self.name} says: {answer}")
             state["agents"][f"{self.name}"] = answer
             return state
