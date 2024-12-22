@@ -11,7 +11,8 @@ import time
 nltk.download('punkt_tab')
 nltk.download('averaged_perceptron_tagger_eng')
 
-index_name = os.getenv("DB_INDEX")
+index_name = os.getenv("RAG_INDEX")
+source_folder = "knowledge_base/rag"
 
 # Function to delete all the documents in a given index
 def delete_index(azure_search_endpoint, azure_search_key, index_name):
@@ -81,10 +82,10 @@ splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=64)
 
 documents = []
 
-print("Discovering files in the knowledge base...")
+print(f"Discovering files in {source_folder}...")
 
 # Iterate over each file in the knowledge base, split it into chunks and push it to the database
-for root, dirs, files in os.walk('knowledge-base/rag'):
+for root, dirs, files in os.walk(source_folder):
     for file in files:
         file_path = os.path.join(root, file)
 

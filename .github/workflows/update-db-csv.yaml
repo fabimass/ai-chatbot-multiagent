@@ -1,0 +1,26 @@
+name: Update Database (CSV)
+
+# The workflow runs when something change in the knowledge base or can be triggered manually
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "knowledge-base/csv/**"
+
+env:
+  AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+  CSV_CONTAINER: ${{ vars.CSV_CONTAINER }}
+
+jobs:
+  update_db:
+    name: Update Database
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: pip install azure-storage-blob
+
+      - name: Run script
+        run: python -u .github/scripts/update-db-csv.py

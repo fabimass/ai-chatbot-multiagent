@@ -1,4 +1,4 @@
-name: Update Database
+name: Update Database (RAG)
 
 # The workflow runs when something change in the knowledge base or can be triggered manually
 on:
@@ -13,7 +13,7 @@ env:
   AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
   AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
   GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-  DB_INDEX: ${{ vars.DB_INDEX }}
+  RAG_INDEX: ${{ vars.RAG_INDEX }}
   EMBEDDINGS_MODEL: ${{ vars.EMBEDDINGS_MODEL }}
   CHUNK_SIZE: ${{ vars.CHUNK_SIZE }}
   CHUNK_OVERLAP: ${{ vars.CHUNK_OVERLAP }}
@@ -79,8 +79,8 @@ jobs:
       - name: Wait for 30 seconds
         run: sleep 30
 
-      - name: Run update-db script
-        run: python -u .github/scripts/update-db.py
+      - name: Run script
+        run: python -u .github/scripts/update-db-rag.py
 
       - name: Remove IP from Azure OpenAI whitelist
         run: |

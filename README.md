@@ -31,10 +31,11 @@ For the pipeline to work correctly, you must create the following **secrets** in
 
 Additionally, the following **variables** need to be set:
 
-- `DB_INDEX`
+- `RAG_INDEX`
 - `EMBEDDINGS_MODEL`
 
 ### Important Notes:
+
 - **Trigger**: The ingestion process is triggered automatically whenever a change is detected in the `knowledge-base` folder.
 - **Persistence**: Any document not currently in the `knowledge-base` folder will be removed from the database during the purge step.
 - **Supported Formats**: Ensure that only PDF and Markdown files are added to the folder, as other formats are not supported by the pipeline.

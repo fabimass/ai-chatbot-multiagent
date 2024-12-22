@@ -8,7 +8,7 @@ rag_config = {
     "agent_directive": "You are able to answer questions related to Fabian's final project for his master degree in AI.",
     "azure_search_endpoint": os.getenv("AZURE_SEARCH_URI"),
     "azure_search_key": os.getenv("AZURE_SEARCH_KEY"),
-    "index_name": os.getenv("DB_INDEX"),
+    "index_name": os.getenv("RAG_INDEX"),
     "embeddings": os.getenv("EMBEDDINGS_MODEL")
 }
 
@@ -22,6 +22,6 @@ csv_config = {
     "agent_id": "csv",
     "agent_directive": "You are able to answer questions related to a collection of CSV files, which contains data from DC and Marvel characters.",
     "connection_string": os.getenv("AZURE_STORAGE_CONNECTION_STRING"),
-    "container_name": "csv",
+    "container_name": os.getenv("CSV_CONTAINER"),
     "index_file_name": "index.csv"
 }
