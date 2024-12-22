@@ -3,14 +3,14 @@ from langchain_core.runnables import RunnableLambda
 from langgraph.graph import StateGraph
 
 class Graph():
-    def __init__(self, supervisor, agent_list): 
+    def __init__(self, supervisor, summarizer, agent_list): 
         self.builder = StateGraph(State)
         
         # Add a node for the supervisor
-        self.builder.add_node("supervisor_node", supervisor.pick_next_agent)
+        self.builder.add_node("supervisor_node", supervisor.generate_answer)
         
         # Add a node for the summarizer
-        self.builder.add_node("summarizer_node", supervisor.summarize)
+        self.builder.add_node("summarizer_node", summarizer.generate_answer)
         
         # Loop through each agent in the agent list and add a node for each agent.
         for agent in agent_list:

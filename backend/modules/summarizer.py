@@ -4,7 +4,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda
 
-class Supervisor:
+class Summarizer:
     
     def __init__(self, agent_list): 
 
@@ -19,8 +19,12 @@ class Supervisor:
 
         # The system prompt guides the agent on how to respond
         self.system_prompt = (
-            f"You are a supervisor tasked with managing a conversation between the following workers: {self.agents}."
-            ""
+            f"You are an AI assistant tasked with summarizing a conversation between the following workers: {self.agents}."
+            "Given the following user question, all the workers will provide a response."
+            "Your task is to analyze each of the responses and provide the best possible response to the user."
+            "Do not make up new information that is not explicitly in the workers response."
+            "\n\n"
+            "Workers response: {agents_output}"
         )
 
         # The prompt puts together the system prompt with the user question
@@ -36,19 +40,14 @@ class Supervisor:
 
         # The chain orchestrates the whole flow
         self.rag_chain = (
-            { "question": RunnableLambda(lambda inputs: inputs["question"]) }
+            { "question": RunnableLambda(lambda inputs: inputs["question"]), "agents_output": RunnableLambda(lambda inputs: inputs["agents_output"]) }
             #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
             | self.prompt
             | self.llm
             | self.parser
         )
-       
+
     def generate_answer(self, state: State):
-        if "agents" not in state:
-            state["agents"] = {}
-        
-        for agent in self.agents:
-            if agent not in state["agents"]:
-                print(f"Next agent: {agent}")
-                return { "next": agent }
-        return { "next": "FINISH" }
+        print("Summarizing...")
+        answer = self.rag_chain.invoke({ "question": state["question"], "agents_output": state["agents"] })
+        return { "answer": answer }

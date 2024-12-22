@@ -7,8 +7,14 @@ from modules.graph import Graph
 def mock_supervisor():
     # Mock the supervisor with required methods
     supervisor = MagicMock()
-    supervisor.pick_next_agent = MagicMock()
-    supervisor.summarize = MagicMock()
+    supervisor.generate_answer = MagicMock()
+    return supervisor
+
+@pytest.fixture
+def mock_summarizer():
+    # Mock the supervisor with required methods
+    supervisor = MagicMock()
+    supervisor.generate_answer = MagicMock()
     return supervisor
 
 @pytest.fixture
@@ -22,22 +28,22 @@ def mock_agents():
     agent_2.name = "agent2"   
     return [agent_1, agent_2]
 
-def test_graph_initialization(mock_supervisor, mock_agents):
+def test_graph_initialization(mock_supervisor, mock_summarizer, mock_agents):
     with patch("modules.graph.StateGraph") as MockStateGraph, \
          patch("modules.graph.RunnableLambda") as MockRunnableLambda:
         
         MockStateGraph.return_value = MagicMock()
 
         # Create the Graph instance
-        graph = Graph(mock_supervisor, mock_agents)
+        graph = Graph(mock_supervisor, mock_summarizer, mock_agents)
         
         # Verify StateGraph initialization
         MockStateGraph.assert_called_once_with(State)
 
         # Verify nodes are added
         calls_add_node = [
-            call("supervisor_node", mock_supervisor.pick_next_agent),
-            call("summarizer_node", mock_supervisor.summarize),
+            call("supervisor_node", mock_supervisor.generate_answer),
+            call("summarizer_node", mock_summarizer.generate_answer),
             call("agent1_node", mock_agents[0].generate_answer),
             call("agent2_node", mock_agents[1].generate_answer),
         ]

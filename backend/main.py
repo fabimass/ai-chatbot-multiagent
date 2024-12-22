@@ -8,6 +8,7 @@ from modules.agent_rag import AgentRag
 from modules.agent_sql import AgentSql
 from modules.agent_csv import AgentCsv
 from modules.supervisor import Supervisor
+from modules.summarizer import Summarizer
 from modules.graph import Graph
 from azure.data.tables import TableServiceClient, TableEntity
 
@@ -27,12 +28,14 @@ def initial_setup():
     print(f"{agent_csv.name} ready.")
     agents = [agent_rag, agent_sql, agent_csv]
 
-    # Supervisor instantiation
+    # Supervisor & summarizer instantiation
     supervisor = Supervisor(agents)
     print("Supervisor ready.")
+    summarizer = Summarizer(agents)
+    print("Summarizer ready.")
 
     # Graph instantiation
-    graph = Graph(supervisor, agents)
+    graph = Graph(supervisor, summarizer, agents)
     print("Graph ready.")
 
     # Tables instantiation
