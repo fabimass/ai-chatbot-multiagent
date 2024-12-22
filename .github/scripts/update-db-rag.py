@@ -12,7 +12,7 @@ nltk.download('punkt_tab')
 nltk.download('averaged_perceptron_tagger_eng')
 
 index_name = os.getenv("RAG_INDEX")
-source_folder = "knowledge_base/rag"
+source_folder = "knowledge-base/rag"
 
 # Function to delete all the documents in a given index
 def delete_index(azure_search_endpoint, azure_search_key, index_name):

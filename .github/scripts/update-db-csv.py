@@ -35,7 +35,7 @@ for root, dirs, files in os.walk(source_folder):
     for file in files:
         file_path = os.path.join(root, file)
     
-        if file.endswith('.pdf'):
+        if file.endswith('.csv'):
             blob_client = container_client.get_blob_client(file)
             print(f"Uploading {file}...")
             with open(file_path, "rb") as data:
