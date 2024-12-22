@@ -8,7 +8,7 @@ import re
 
 class AgentSql:
     def __init__(self, config): 
-        self.name = config["agent_name"]
+        self.name = f"agent_{config['agent_id']}"
         
         # Database instantiation
         self.db_uri = config["connection_string"]
@@ -157,6 +157,9 @@ class AgentSql:
     def generate_answer(self, state: State):
         print(f"{self.name} says: received question '{state['question']}'")
         
+        if "agents" not in state:
+            state["agents"] = {}
+
         # Reconnect with database if connection was closed
         if(self.check_connection() is False):
             self.db = self.connect()
@@ -172,8 +175,10 @@ class AgentSql:
             print(f"{self.name} says: generating answer...")
             answer = self.answer_generator_chain.invoke({"question": state["question"], "query": query, "result": result, "history": state["history"]})
             print(f"{self.name} says: {answer}")
-            return { "agent_sql": answer }
+            state["agents"][f"{self.name}"] = answer
+            return state
         
         except Exception as e:
             print(f"{self.name} says: ERROR {e}")
-            return { "agent_sql": f"I don't know" }
+            state["agents"][f"{self.name}"] = "I don't know"
+            return state

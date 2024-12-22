@@ -9,7 +9,7 @@ class Supervisor:
     def __init__(self, agent_list): 
 
         # List with all the agents to supervise
-        self.agents = agent_list
+        self.agents = [agent.name for agent in agent_list]
 
         # Instantiate a pre-trained Large Language Model from Azure OpenAI
         self.llm = AzureChatOpenAI(
@@ -48,14 +48,16 @@ class Supervisor:
         )
        
     def pick_next_agent(self, state: State):
+        if "agents" not in state:
+            state["agents"] = {}
+        
         for agent in self.agents:
-            if agent not in state:
+            if agent not in state["agents"]:
                 print(f"Next agent: {agent}")
                 return { "next": agent }
         return { "next": "FINISH" }
 
     def summarize(self, state: State):
         print("Summarizing...")
-        agents_output = {key: state[key] for key in self.agents if key in state}
-        answer = self.rag_chain.invoke({ "question": state["question"], "agents_output": agents_output })
+        answer = self.rag_chain.invoke({ "question": state["question"], "agents_output": state["agents"] })
         return { "answer": answer }

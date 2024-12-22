@@ -11,7 +11,7 @@ import pandas as pd
 class AgentCsv:
     
     def __init__(self, config): 
-        self.name = config["agent_name"]
+        self.name = f"agent_{config['agent_id']}"
         self.index_file_name = config["index_file_name"]
         self.container_name = config["container_name"]
         self.connection_string = config["connection_string"]
@@ -193,6 +193,9 @@ class AgentCsv:
     def generate_answer(self, state: State):
         print(f"{self.name} says: received question '{state['question']}'")
         
+        if "agents" not in state:
+            state["agents"] = {}
+
         try:
             # Get index file
             index = self.get_index()
@@ -213,7 +216,11 @@ class AgentCsv:
             print(f"{self.name} says: generating answer...")
             answer = self.answer_generator_chain.invoke({"question": state["question"], "code": code, "result": result, "history": state["history"]})
             print(f"{self.name} says: {answer}")
-            return { "agent_csv": answer }
+            state["agents"][f"{self.name}"] = answer
+            print(state)
+            return state
+        
         except Exception as e:
             print(f"{self.name} says: ERROR {e}")
-            return { "agent_csv": f"I don't know" }
+            state["agents"][f"{self.name}"] = "I don't know"
+            return state

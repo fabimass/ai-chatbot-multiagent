@@ -6,7 +6,7 @@ from modules.agent_rag import AgentRag
 @pytest.fixture
 def config():
     return {
-        "agent_name": "RAG Agent Test",
+        "agent_id": "rag",
         "agent_directive": "You are a RAG agent",
         "azure_search_endpoint": "https://mock-search-endpoint",
         "azure_search_key": "mock-key",
@@ -74,7 +74,7 @@ def test_generate_answer_success(agent_rag, test_variables, config):
     agent_rag.llm.return_value = test_variables["mock_answer"]
 
     # Call the method under test
-    response = agent_rag.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
+    answer = agent_rag.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
 
     # Assert that a call to retrieve context was done
     agent_rag.retrieve_context.assert_called_once_with(test_variables["mock_question"])
@@ -90,12 +90,14 @@ def test_generate_answer_success(agent_rag, test_variables, config):
     assert str(test_variables["mock_history"]) in agent_rag.llm.call_args[0][0].messages[0].content
 
     # Assert the final answer
-    assert response == {"agent_rag": test_variables["mock_answer"]}
+    assert "agent_rag" in answer["agents"]
+    assert answer["agents"]["agent_rag"] == test_variables["mock_answer"]
 
 def test_generate_answer_error(agent_rag, test_variables):
     # Mock to raise an error
     agent_rag.retrieve_context = MagicMock(side_effect=Exception("Mocked exception"))
 
-    response = agent_rag.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
+    answer = agent_rag.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
 
-    assert response == {"agent_rag": "I don't know"}
+    assert "agent_rag" in answer["agents"]
+    assert answer["agents"]["agent_rag"] == "I don't know"

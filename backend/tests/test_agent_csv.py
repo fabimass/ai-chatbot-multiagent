@@ -7,7 +7,7 @@ import pandas as pd
 @pytest.fixture
 def config():
     return {
-        "agent_name": "CSV Agent Test",
+        "agent_id": "csv",
         "agent_directive": "You are a CSV agent",
         "connection_string": "mock-connection-string",
         "container_name": "mock-container",
@@ -142,12 +142,14 @@ def test_generate_answer_success(agent_csv, test_variables, config):
     assert str(test_variables["mock_history"]) in agent_csv.llm.call_args[0][0].messages[0].content
 
     # Assert the final answer
-    assert answer == {"agent_csv": test_variables["mock_answer"]}
+    assert "agent_csv" in answer["agents"]
+    assert answer["agents"]["agent_csv"] == test_variables["mock_answer"]
 
 def test_generate_answer_error(agent_csv, test_variables):
     # Mock to raise an error
     agent_csv.get_index = MagicMock(side_effect=Exception("Mocked exception"))
 
-    response = agent_csv.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
+    answer = agent_csv.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
 
-    assert response == {"agent_csv": "I don't know"}
+    assert "agent_csv" in answer["agents"]
+    assert answer["agents"]["agent_csv"] == "I don't know"

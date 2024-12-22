@@ -15,8 +15,6 @@ class FeedbackModel(AnswerModel):
 
 class State(TypedDict):
     question: str
-    agent_rag: str
-    agent_sql: str
-    agent_csv: str
+    agents: dict
     answer: str
     history: list

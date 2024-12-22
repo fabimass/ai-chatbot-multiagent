@@ -38,7 +38,7 @@ def test_generate_answer(mock_setup):
     mock_history = [{"role": "user", "content": "hi!"}, {"role": "bot", "content": "hi! how can I help you?"}]
     mock_session_id = "1234"
     mock_graph = mock_setup["graph"]
-    mock_graph.invoke.return_value = { "question": mock_question, "answer": mock_answer, "agent_1": "agent answer", "agent_2": "agent answer" }
+    mock_graph.invoke.return_value = { "question": mock_question, "answer": mock_answer, "agents": {"agent_1": "agent answer", "agent_2": "agent answer"} }
     
     # Mock the interactions with the chat history
     with patch('main.get_chat_history') as MockGetChatHistory, \

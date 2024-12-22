@@ -6,7 +6,7 @@ from modules.agent_sql import AgentSql
 @pytest.fixture
 def config():
     return {
-        "agent_name": "SQL Agent Test",
+        "agent_id": "sql",
         "agent_directive": "You are a SQL agent",
         "connection_string": "mock-connection-string"
     }
@@ -109,12 +109,14 @@ def test_generate_answer_success(agent_sql, test_variables, config):
     assert str(test_variables["mock_history"]) in agent_sql.llm.call_args[0][0].messages[0].content
 
     # Assert the final answer
-    assert answer == {"agent_sql": test_variables["mock_answer"]}
+    assert "agent_sql" in answer["agents"]
+    assert answer["agents"]["agent_sql"] == test_variables["mock_answer"]
 
 def test_generate_answer_error(agent_sql, test_variables):
     # Mock to raise an error
     agent_sql.get_schema = MagicMock(side_effect=Exception("Mocked exception"))
 
-    response = agent_sql.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
+    answer = agent_sql.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
 
-    assert response == {"agent_sql": "I don't know"}
+    assert "agent_sql" in answer["agents"]
+    assert answer["agents"]["agent_sql"] == "I don't know"

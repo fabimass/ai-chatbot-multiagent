@@ -21,12 +21,12 @@ def initial_setup():
 
     # Agents instantiation
     agent_rag = AgentRag(rag_config)
-    print(f"{rag_config['agent_name']} ready.")
+    print(f"{agent_rag.name} ready.")
     agent_sql = AgentSql(sql_config)
-    print(f"{sql_config['agent_name']} ready.")
+    print(f"{agent_sql.name} ready.")
     agent_csv = AgentCsv(csv_config)
-    print(f"{csv_config['agent_name']} ready.")
-    agents = ["agent_rag", "agent_sql", "agent_csv"]
+    print(f"{agent_csv.name} ready.")
+    agents = [agent_rag, agent_sql, agent_csv]
 
     # Supervisor instantiation
     supervisor = Supervisor(agents)
@@ -36,17 +36,15 @@ def initial_setup():
     builder = StateGraph(State)
     builder.add_node("supervisor_node", supervisor.pick_next_agent)
     builder.add_node("summarizer_node", supervisor.summarize)
-    builder.add_node("rag_node", agent_rag.generate_answer)
-    builder.add_node("sql_node", agent_sql.generate_answer)
-    builder.add_node("csv_node", agent_csv.generate_answer)
+    for agent in agents:
+        builder.add_node(f"{agent.name}_node", agent.generate_answer)
     builder.add_conditional_edges(
         "supervisor_node",
-        RunnableLambda(lambda inputs: inputs["next"]),  
-        {"agent_rag": "rag_node", "agent_sql": "sql_node", "agent_csv": "csv_node", "FINISH": "summarizer_node"}
+        RunnableLambda(lambda inputs: inputs["next"]),
+        {**{ f"{agent.name}": f"{agent.name}_node" for agent in agents }, "FINISH": "summarizer_node"}
     )
-    builder.add_edge("rag_node", "supervisor_node")
-    builder.add_edge("sql_node", "supervisor_node")
-    builder.add_edge("csv_node", "supervisor_node")
+    for agent in agents:
+        builder.add_edge(f"{agent.name}_node", "supervisor_node")
     builder.set_entry_point("supervisor_node")
     graph = builder.compile()
     print("Graph ready.")
@@ -88,7 +86,7 @@ def generate_answer(body: QuestionModel, setup: dict = Depends(get_setup)):
 
     try:
         result = graph.invoke({ "question": prompt, "history": session_history })
-        response = {"question": prompt, "answer": result["answer"], "session_id": session_id, "agents": {key: value for key, value in result.items() if key.startswith("agent_")}}
+        response = {"question": prompt, "answer": result["answer"], "session_id": session_id, "agents": result["agents"]}
         add_to_chat_history(AnswerModel(**response), setup=setup)
         return response
     except Exception as e:

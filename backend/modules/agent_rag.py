@@ -8,7 +8,7 @@ from langchain_core.runnables import RunnableLambda
 
 class AgentRag:    
     def __init__(self, config):
-        self.name = config["agent_name"]
+        self.name = f"agent_{config['agent_id']}"
         
         # Embeddings model instantiation
         if config["embeddings"] == "openai":
@@ -78,6 +78,9 @@ class AgentRag:
     def generate_answer(self, state: State):
         print(f"{self.name} says: received question '{state['question']}'")
 
+        if "agents" not in state:
+            state["agents"] = {}
+
         try:
             # Retrieve the most relevant documents from the vector store
             context = self.retrieve_context(state['question'])
@@ -85,8 +88,10 @@ class AgentRag:
             print(f"{self.name} says: generating answer...")
             answer = self.rag_chain.invoke({"question": state["question"], "context": context, "history": state["history"]})
             print(f"{self.name} says: {answer}")
-            return { "agent_rag": answer }
+            state["agents"][f"{self.name}"] = answer
+            return state
         
         except Exception as e:
             print(f"{self.name} says: ERROR {e}")
-            return { "agent_rag": f"I don't know" }
+            state["agents"][f"{self.name}"] = "I don't know"
+            return state

@@ -9,7 +9,16 @@ def supervisor():
         # Mock the LLM
         MockLLM.return_value = MagicMock()
         # Mock available agents
-        agents = ["agent_1", "agent_2", "agent_3"]
+        MockAgent1 = MagicMock()
+        MockAgent2 = MagicMock()
+        MockAgent3 = MagicMock()
+        agent_1 = MockAgent1.return_value
+        agent_1.name = "agent_1"
+        agent_2 = MockAgent2.return_value
+        agent_2.name = "agent_2"
+        agent_3 = MockAgent3.return_value
+        agent_3.name = "agent_3"
+        agents = [agent_1, agent_2, agent_3]
         
         return Supervisor(agents)
 
@@ -19,16 +28,16 @@ def test_pick_next_agent(supervisor):
     result = supervisor.pick_next_agent(state)
     assert result == {"next": "agent_1"}
 
-    state = {"agent_1": "response_1", "question": "test_question"}
+    state = {"agents": {"agent_1": "response_1"}, "question": "test_question"}
     result = supervisor.pick_next_agent(state)
     assert result == {"next": "agent_2"}
 
-    state = {"agent_1": "response_1", "agent_2": "response_2", "question": "test_question"}
+    state = {"agents": {"agent_1": "response_1", "agent_2": "response_2"}, "question": "test_question"}
     result = supervisor.pick_next_agent(state)
     assert result == {"next": "agent_3"}
     
     # Test when all agents have responded
-    state = {"agent_1": "response_1", "agent_2": "response_2", "agent_3": "response_3", "question": "test_question"}
+    state = {"agents": {"agent_1": "response_1", "agent_2": "response_2", "agent_3": "response_3"}, "question": "test_question"}
     result = supervisor.pick_next_agent(state)
     assert result == {"next": "FINISH"}
 
@@ -38,7 +47,7 @@ def test_summarize(supervisor):
     mock_agent_1_output = "response_1"
     mock_agent_2_output = "response_2"
     mock_agent_3_output = "response_3"
-    state = {"agent_1": mock_agent_1_output, "agent_2": mock_agent_2_output, "agent_3": mock_agent_3_output, "question": mock_question}
+    state = {"agents": {"agent_1": mock_agent_1_output, "agent_2": mock_agent_2_output, "agent_3": mock_agent_3_output}, "question": mock_question }
 
     # Mock LLM response
     mock_answer = "This is a test answer"
