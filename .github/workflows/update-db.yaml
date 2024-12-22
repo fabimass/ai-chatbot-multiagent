@@ -67,7 +67,7 @@ jobs:
           if [[ $existing_rules == "null" ]]; then
             updated_rules="[$new_ip_rule]"
           else
-            updated_rules=$(echo "$existing_rules" | sed 's/]/, '"$new_ip_rule"']/')
+            updated_rules=$(echo "$existing_rules" | jq ". + [$new_ip_rule]")
           fi
 
           # Update the Azure Search service with the new list of IP rules
