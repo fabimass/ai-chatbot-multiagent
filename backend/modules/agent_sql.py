@@ -159,7 +159,7 @@ class AgentSql:
         
         # Reconnect with database if connection was closed
         if(self.check_connection() is False):
-            self.connect()
+            self.db = self.connect()
         
         try:
             # Get tables and columns from the database
