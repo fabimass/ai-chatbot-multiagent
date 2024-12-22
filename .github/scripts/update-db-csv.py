@@ -21,6 +21,7 @@ while(retries):
     try:
         container_client.create_container()
         print(f"Container '{container_name}' created.")
+        break
     except Exception as e:
         print(f"Container creation failed: {e}")
         print("Retrying...")
