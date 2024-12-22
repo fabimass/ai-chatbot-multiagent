@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "knowledge-base/**"
+      - "knowledge-base/rag/**"
 
 env:
   AZURE_SEARCH_URI: ${{ secrets.AZURE_SEARCH_URI }}
