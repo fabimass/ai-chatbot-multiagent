@@ -158,7 +158,7 @@ def test_add_to_chat_history(mock_setup, mock_answer):
     with patch('main.uuid') as MockId:  
         mock_history_table = mock_setup["history_table"]
         mock_user = MockEntity(PartitionKey=mock_answer.session_id, RowKey="123", role="user", content=mock_answer.question)
-        mock_bot = MockEntity(PartitionKey=mock_answer.session_id, RowKey="123", role="bot", content=mock_answer.answer)
+        mock_bot = MockEntity(PartitionKey=mock_answer.session_id, RowKey="123", role="bot", content=mock_answer.answer, agent_1="agent answer", agent_2="agent answer")
         MockId.uuid4.return_value = "123"
         
         # Mock create_entity to do nothing

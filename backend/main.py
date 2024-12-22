@@ -174,6 +174,8 @@ def add_to_chat_history(body: AnswerModel, setup: dict = Depends(get_setup)):
         bot_entity["RowKey"] = str(uuid.uuid4())
         bot_entity["role"] = "bot"
         bot_entity["content"] = body.answer
+        for key, value in body.agents.items():
+            bot_entity[key] = value
         history_table.create_entity(entity=bot_entity)
         
         return {"message": "Chat history updated successfully."}
