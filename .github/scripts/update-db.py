@@ -84,7 +84,7 @@ documents = []
 print("Discovering files in the knowledge base...")
 
 # Iterate over each file in the knowledge base, split it into chunks and push it to the database
-for root, dirs, files in os.walk('knowledge-base'):
+for root, dirs, files in os.walk('knowledge-base/rag'):
     for file in files:
         file_path = os.path.join(root, file)
 
