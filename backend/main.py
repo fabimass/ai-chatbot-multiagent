@@ -3,14 +3,13 @@ import uuid
 from http.client import HTTPException
 from fastapi import FastAPI, Depends
 from config import rag_config, sql_config, csv_config
-from modules.models import QuestionModel, AnswerModel, FeedbackModel, State
+from modules.models import QuestionModel, AnswerModel, FeedbackModel
 from modules.agent_rag import AgentRag
 from modules.agent_sql import AgentSql
 from modules.agent_csv import AgentCsv
 from modules.supervisor import Supervisor
+from modules.graph import Graph
 from azure.data.tables import TableServiceClient, TableEntity
-from langchain_core.runnables import RunnableLambda
-from langgraph.graph import StateGraph
 
 
 # Entry point to use FastAPI
@@ -33,20 +32,7 @@ def initial_setup():
     print("Supervisor ready.")
 
     # Graph instantiation
-    builder = StateGraph(State)
-    builder.add_node("supervisor_node", supervisor.pick_next_agent)
-    builder.add_node("summarizer_node", supervisor.summarize)
-    for agent in agents:
-        builder.add_node(f"{agent.name}_node", agent.generate_answer)
-    builder.add_conditional_edges(
-        "supervisor_node",
-        RunnableLambda(lambda inputs: inputs["next"]),
-        {**{ f"{agent.name}": f"{agent.name}_node" for agent in agents }, "FINISH": "summarizer_node"}
-    )
-    for agent in agents:
-        builder.add_edge(f"{agent.name}_node", "supervisor_node")
-    builder.set_entry_point("supervisor_node")
-    graph = builder.compile()
+    graph = Graph(supervisor, agents)
     print("Graph ready.")
 
     # Tables instantiation
