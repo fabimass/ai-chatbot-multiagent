@@ -116,7 +116,7 @@ def test_run_code(agent_csv, test_variables):
     # Assertions to verify expected behavior
     assert result == test_variables["mock_code_result"]
 
-def test_generate_answer_success(agent_csv, test_variables, config):
+def test_generate_answer_complete_flow(agent_csv, test_variables, config):
     with patch('modules.agent_csv.filter_agent_history') as MockFilterAgentHistory:
         MockFilterAgentHistory.return_value = test_variables["mock_history"]
 
@@ -127,25 +127,61 @@ def test_generate_answer_success(agent_csv, test_variables, config):
         agent_csv.generate_code = MagicMock(return_value=test_variables["mock_cleaned_code"])
         agent_csv.run_code = MagicMock(return_value=test_variables["mock_code_result"])
         
-        # Mock LLM response
-        agent_csv.llm.return_value = test_variables["mock_answer"]
+        # Mock LLM response (the entry point asks for more information)
+        agent_csv.llm.side_effect = ["CONTINUE", test_variables["mock_answer"]]
         
         # Call the method under test
         answer = agent_csv.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
 
         # Assert that the user question, the generated code and the code result were used when generating an answer
-        assert test_variables["mock_question"] in agent_csv.llm.call_args[0][0].messages[1].content
-        assert test_variables["mock_cleaned_code"] in agent_csv.llm.call_args[0][0].messages[0].content
-        assert str(test_variables["mock_code_result"]) in agent_csv.llm.call_args[0][0].messages[0].content
+        assert test_variables["mock_question"] in agent_csv.llm.call_args_list[0][0][0].messages[1].content
+        assert test_variables["mock_question"] in agent_csv.llm.call_args_list[1][0][0].messages[1].content
+        assert test_variables["mock_cleaned_code"] not in agent_csv.llm.call_args_list[0][0][0].messages[0].content
+        assert test_variables["mock_cleaned_code"] in agent_csv.llm.call_args_list[1][0][0].messages[0].content
+        assert str(test_variables["mock_code_result"]) not in agent_csv.llm.call_args_list[0][0][0].messages[0].content
+        assert str(test_variables["mock_code_result"]) in agent_csv.llm.call_args_list[1][0][0].messages[0].content
 
         # Assert the agent is aware of its own skills
-        assert config["agent_directive"] in agent_csv.llm.call_args[0][0].messages[0].content
+        assert config["agent_directive"] in agent_csv.llm.call_args_list[0][0][0].messages[0].content
+        assert config["agent_directive"] not in agent_csv.llm.call_args_list[1][0][0].messages[0].content
         
         # Assert the agent is aware of the chat history
-        assert str(test_variables["mock_history"]) in agent_csv.llm.call_args[0][0].messages[0].content
+        assert str(test_variables["mock_history"]) in agent_csv.llm.call_args_list[0][0][0].messages[0].content
+        assert str(test_variables["mock_history"]) in agent_csv.llm.call_args_list[1][0][0].messages[0].content
 
         # Assert that the chat history was filtered
         MockFilterAgentHistory.assert_called_once_with(test_variables["mock_history"], "agent_csv")
+
+        # Assert the final answer
+        assert "agent_csv" in answer["agents"]
+        assert answer["agents"]["agent_csv"] == test_variables["mock_answer"]
+
+def test_generate_answer_skip_flow(agent_csv, test_variables, config):
+    with patch('modules.agent_csv.filter_agent_history') as MockFilterAgentHistory:
+        MockFilterAgentHistory.return_value = test_variables["mock_history"]
+
+        # Mock already tested methods
+        agent_csv.get_index = MagicMock(return_value=test_variables["mock_index"])
+        agent_csv.get_relevant_files = MagicMock(return_value=test_variables["mock_relevant_files"])
+        agent_csv.get_files_head = MagicMock(return_value=test_variables["mock_context"])
+        agent_csv.generate_code = MagicMock(return_value=test_variables["mock_cleaned_code"])
+        agent_csv.run_code = MagicMock(return_value=test_variables["mock_code_result"])
+        
+        # Mock LLM response (the entry point provides the answer right away)
+        agent_csv.llm.return_value = test_variables["mock_answer"]
+        
+        # Call the method under test
+        answer = agent_csv.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
+
+        # Assert that the LLM was called only once
+        agent_csv.llm.assert_called_once()
+
+        # Assert no other methods were called
+        agent_csv.get_index.assert_not_called()
+        agent_csv.get_relevant_files.assert_not_called()
+        agent_csv.get_files_head.assert_not_called()
+        agent_csv.generate_code.assert_not_called()
+        agent_csv.run_code.assert_not_called()
 
         # Assert the final answer
         assert "agent_csv" in answer["agents"]

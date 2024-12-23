@@ -85,7 +85,7 @@ def test_run_query(agent_sql, test_variables):
     assert result == test_variables["mock_query_result"]
     agent_sql.db.run.assert_called_once_with(test_variables["mock_cleaned_query"])
 
-def test_generate_answer_success(agent_sql, test_variables, config):
+def test_generate_answer_complete_flow(agent_sql, test_variables, config):
     with patch('modules.agent_sql.filter_agent_history') as MockFilterAgentHistory:
         MockFilterAgentHistory.return_value = test_variables["mock_history"]
         
@@ -94,25 +94,57 @@ def test_generate_answer_success(agent_sql, test_variables, config):
         agent_sql.generate_query = MagicMock(return_value=test_variables["mock_cleaned_query"])
         agent_sql.run_query = MagicMock(return_value=test_variables["mock_query_result"])
         
-        # Mock LLM response
-        agent_sql.llm.return_value = test_variables["mock_answer"]
+        # Mock LLM response (the entry point asks for more information)
+        agent_sql.llm.side_effect = ["CONTINUE", test_variables["mock_answer"]]
         
         # Call the method under test
         answer = agent_sql.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
 
         # Assert that the user question, the generated query and the query result were used when generating an answer
-        assert test_variables["mock_question"] in agent_sql.llm.call_args[0][0].messages[1].content
-        assert test_variables["mock_cleaned_query"] in agent_sql.llm.call_args[0][0].messages[0].content
-        assert str(test_variables["mock_query_result"]) in agent_sql.llm.call_args[0][0].messages[0].content
+        assert test_variables["mock_question"] in agent_sql.llm.call_args_list[0][0][0].messages[1].content
+        assert test_variables["mock_question"] in agent_sql.llm.call_args_list[1][0][0].messages[1].content
+        assert test_variables["mock_cleaned_query"] not in agent_sql.llm.call_args_list[0][0][0].messages[0].content
+        assert test_variables["mock_cleaned_query"] in agent_sql.llm.call_args_list[1][0][0].messages[0].content
+        assert str(test_variables["mock_query_result"]) not in agent_sql.llm.call_args_list[0][0][0].messages[0].content
+        assert str(test_variables["mock_query_result"]) in agent_sql.llm.call_args_list[1][0][0].messages[0].content
 
         # Assert the agent is aware of its own skills
-        assert config["agent_directive"] in agent_sql.llm.call_args[0][0].messages[0].content
+        assert config["agent_directive"] in agent_sql.llm.call_args_list[0][0][0].messages[0].content
+        assert config["agent_directive"] not in agent_sql.llm.call_args_list[1][0][0].messages[0].content
         
         # Assert the agent is aware of the chat history
-        assert str(test_variables["mock_history"]) in agent_sql.llm.call_args[0][0].messages[0].content
+        assert str(test_variables["mock_history"]) in agent_sql.llm.call_args_list[0][0][0].messages[0].content
+        assert str(test_variables["mock_history"]) in agent_sql.llm.call_args_list[1][0][0].messages[0].content
 
         # Assert that the chat history was filtered
         MockFilterAgentHistory.assert_called_once_with(test_variables["mock_history"], "agent_sql")
+
+        # Assert the final answer
+        assert "agent_sql" in answer["agents"]
+        assert answer["agents"]["agent_sql"] == test_variables["mock_answer"]
+
+def test_generate_answer_skip_flow(agent_sql, test_variables, config):
+    with patch('modules.agent_sql.filter_agent_history') as MockFilterAgentHistory:
+        MockFilterAgentHistory.return_value = test_variables["mock_history"]
+        
+        # Mock already tested methods
+        agent_sql.get_schema = MagicMock(return_value=test_variables["mock_schema"])
+        agent_sql.generate_query = MagicMock(return_value=test_variables["mock_cleaned_query"])
+        agent_sql.run_query = MagicMock(return_value=test_variables["mock_query_result"])
+        
+        # Mock LLM response (the entry point provides the answer right away)
+        agent_sql.llm.return_value = test_variables["mock_answer"]
+        
+        # Call the method under test
+        answer = agent_sql.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
+
+        # Assert that the LLM was called only once
+        agent_sql.llm.assert_called_once()
+
+        # Assert no other methods were called
+        agent_sql.get_schema.assert_not_called()
+        agent_sql.generate_query.assert_not_called()
+        agent_sql.run_query.assert_not_called()
 
         # Assert the final answer
         assert "agent_sql" in answer["agents"]

@@ -34,15 +34,12 @@ class AgentRag:
         )
 
         # The system prompt guides the agent on how to respond
-        self.system_prompt = (
-            "You are an AI assistant for question-answering tasks."
-            "Your skills are listed below, these skills dictate what you can answer about."
-            "Use only the following pieces of retrieved context and your knowledge about your skills to answer the question." 
-            "If you cannot find the answer, say that you don't know."
-            "Never make up information that is not in the provided context nor in your list of skills." 
-            "Use three sentences maximum and keep the answer concise."
-            "\n\n"
-            f"Your skills: {config['agent_directive']}"
+        self.answer_generator_prompt = (
+            "You are an AI assistant for question-answering tasks. "
+            "Use only the following pieces of retrieved context to answer the question. " 
+            "If you cannot find the answer, say that you don't know. "
+            "Never make up information that is not in the provided data. " 
+            "Use three sentences maximum and keep the answer concise. "
             "\n\n"
             "Context: {context}"
             "\n\n"
@@ -50,10 +47,10 @@ class AgentRag:
         )
 
         # The prompt puts together the system prompt with the user question
-        self.prompt = ChatPromptTemplate.from_messages(
+        self.prompt = lambda inputs: ChatPromptTemplate.from_messages(
             [
-                ("system", self.system_prompt),
-                ("human", "{question}"),
+                ("system", inputs["system_prompt"]),
+                ("human", inputs["human_prompt"]),
             ]
         )
 
@@ -61,10 +58,31 @@ class AgentRag:
         self.parser = StrOutputParser()
 
         # The chain orchestrates the whole flow
-        self.rag_chain = (
+        self.answer_generator_chain = (
             { "question": RunnableLambda(lambda inputs: inputs["question"]), "context": RunnableLambda(lambda inputs: inputs["context"]), "history": RunnableLambda(lambda inputs: inputs["history"]) }
             #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
-            | self.prompt
+            | RunnableLambda(lambda inputs: self.prompt({"system_prompt": self.answer_generator_prompt, "human_prompt": inputs["question"]}))
+            | self.llm
+            | self.parser
+        )
+
+        self.entry_point_prompt = (
+            "You are an AI assistant for question-answering tasks. "
+            f"This is what you can do: {config['agent_directive']} "
+            "\n\n"
+            "Given the following user question, analyze if you can answer it based solely on what you know about your skills and the data from previous conversations. "
+            "If you have a clear answer, provide it. " 
+            "If you are not sure, then answer with 'CONTINUE', nothing else. "
+            "If the user asked you to look for more information, then answer with 'CONTINUE', nothing else. "
+            "Never make up information that is not in the provided data. " 
+            "\n\n"
+            "Chat history: {history}"
+        )
+
+        self.entry_point_chain = (
+            { "question": RunnableLambda(lambda inputs: inputs["question"]), "history": RunnableLambda(lambda inputs: inputs["history"]) }
+            #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
+            | RunnableLambda(lambda inputs: self.prompt({"system_prompt": self.entry_point_prompt, "human_prompt": inputs["question"]}))
             | self.llm
             | self.parser
         )
@@ -86,12 +104,17 @@ class AgentRag:
             # Filter agent history
             agent_history = filter_agent_history(state["history"], self.name)
 
-            # Retrieve the most relevant documents from the vector store
-            context = self.retrieve_context(state['question'])
-            
-            print(f"{self.name} says: generating answer...")
-            answer = self.rag_chain.invoke({"question": state["question"], "context": context, "history": agent_history})
+            # Check if it can answer the question right away or if it needs to continue
+            answer = self.entry_point_chain.invoke({"question": state["question"], "history": agent_history})
             print(f"{self.name} says: {answer}")
+            if answer == 'CONTINUE':
+                # Retrieve the most relevant documents from the vector store
+                context = self.retrieve_context(state['question'])
+                
+                print(f"{self.name} says: generating answer...")
+                answer = self.answer_generator_chain.invoke({"question": state["question"], "context": context, "history": agent_history})
+                print(f"{self.name} says: {answer}")
+            
             state["agents"][f"{self.name}"] = answer
             return state
         

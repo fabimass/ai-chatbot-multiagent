@@ -68,13 +68,15 @@ def test_retrieve_context(agent_rag, test_variables):
     # Assert constructed context
     assert context == test_variables["mock_context"]
 
-def test_generate_answer_success(agent_rag, test_variables, config):
+def test_generate_answer_complete_flow(agent_rag, test_variables, config):
     with patch('modules.agent_rag.filter_agent_history') as MockFilterAgentHistory:
         MockFilterAgentHistory.return_value = test_variables["mock_history"]
         
-        # Mock context retrieval and LLM invocation
+        # Mock context retrieval
         agent_rag.retrieve_context = MagicMock(return_value=test_variables["mock_context"])
-        agent_rag.llm.return_value = test_variables["mock_answer"]
+        
+        # Mock LLM response (the entry point asks for more information)
+        agent_rag.llm.side_effect = ["CONTINUE", test_variables["mock_answer"]]
 
         # Call the method under test
         answer = agent_rag.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
@@ -83,17 +85,44 @@ def test_generate_answer_success(agent_rag, test_variables, config):
         agent_rag.retrieve_context.assert_called_once_with(test_variables["mock_question"])
         
         # Assert that the user question and the context were used when generating an answer
-        assert test_variables["mock_question"] in agent_rag.llm.call_args[0][0].messages[1].content
-        assert test_variables["mock_context"] in agent_rag.llm.call_args[0][0].messages[0].content
+        assert test_variables["mock_question"] in agent_rag.llm.call_args_list[0][0][0].messages[1].content
+        assert test_variables["mock_question"] in agent_rag.llm.call_args_list[1][0][0].messages[1].content
+        assert test_variables["mock_context"] not in agent_rag.llm.call_args_list[0][0][0].messages[0].content
+        assert test_variables["mock_context"] in agent_rag.llm.call_args_list[1][0][0].messages[0].content
 
         # Assert the agent is aware of its own skills
-        assert config["agent_directive"] in agent_rag.llm.call_args[0][0].messages[0].content
+        assert config["agent_directive"] in agent_rag.llm.call_args_list[0][0][0].messages[0].content
+        assert config["agent_directive"] not in agent_rag.llm.call_args_list[1][0][0].messages[0].content
 
         # Assert the agent is aware of the chat history
-        assert str(test_variables["mock_history"]) in agent_rag.llm.call_args[0][0].messages[0].content
+        assert str(test_variables["mock_history"]) in agent_rag.llm.call_args_list[0][0][0].messages[0].content
+        assert str(test_variables["mock_history"]) in agent_rag.llm.call_args_list[1][0][0].messages[0].content
 
         # Assert that the chat history was filtered
         MockFilterAgentHistory.assert_called_once_with(test_variables["mock_history"], "agent_rag")
+
+        # Assert the final answer
+        assert "agent_rag" in answer["agents"]
+        assert answer["agents"]["agent_rag"] == test_variables["mock_answer"]
+
+def test_generate_answer_skip_flow(agent_rag, test_variables, config):
+    with patch('modules.agent_rag.filter_agent_history') as MockFilterAgentHistory:
+        MockFilterAgentHistory.return_value = test_variables["mock_history"]
+
+        # Mock context retrieval
+        agent_rag.retrieve_context = MagicMock(return_value=test_variables["mock_context"])
+
+        # Mock LLM response (the entry point provides the answer right away)
+        agent_rag.llm.return_value = test_variables["mock_answer"]
+
+        # Call the method under test
+        answer = agent_rag.generate_answer(State({"question": test_variables["mock_question"], "history": test_variables["mock_history"]}))
+
+        # Assert that the LLM was called only once
+        agent_rag.llm.assert_called_once()
+
+        # Assert no other methods were called
+        agent_rag.retrieve_context.assert_not_called()
 
         # Assert the final answer
         assert "agent_rag" in answer["agents"]

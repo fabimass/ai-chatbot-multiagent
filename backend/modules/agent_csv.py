@@ -39,10 +39,10 @@ class AgentCsv:
 
         # A prompt to select the most relevant files based on a user question and an index
         self.file_selector_prompt = (
-            "You are a file selector."
-            "Given an input question and an index, provide a list with the most relevant files."
-            "The list must be a comma separated string containing only the file names."
-            "Respond only with the generated list, nothing else."
+            "You are a file selector. "
+            "Given an input question and an index, provide a list with the most relevant files. "
+            "The list must be a comma separated string containing only the file names. "
+            "Respond only with the generated list, nothing else. "
             "\n\n"
             "Index: {index}"
             "\n\n"
@@ -59,20 +59,20 @@ class AgentCsv:
 
         # A prompt to double check the generated query and adjust if needed
         self.code_generator_prompt = (
-            "You are a Python expert specialized in working with CSV files using the pandas library."
-            "Given an input question, output a syntactically correct Python code to run."
-            "Respond only with the generated code, nothing else."
-            "When generating the code:"
-            "- Understand the context: analyze the user's question and the CSV data provided to infer the structure and relevant fields." 
-            "- Use pandas library to load, manipulate, and analyze the data."
-            "- Handle edge cases such as missing values or empty datasets gracefully." 
-            "- Ensure the code is executable."
-            "- ALWAYS assign the final result to a variable called 'result'"
-            "- DO NOT attempt to modify the data in the csv files."
+            "You are a Python expert specialized in working with CSV files using the pandas library. "
+            "Given an input question, output a syntactically correct Python code to run. "
+            "Respond only with the generated code, nothing else. "
+            "When generating the code: "
+            "- Understand the context: analyze the user's question and the CSV data provided to infer the structure and relevant fields. " 
+            "- Use pandas library to load, manipulate, and analyze the data. "
+            "- Handle edge cases such as missing values or empty datasets gracefully. " 
+            "- Ensure the code is executable. "
+            "- ALWAYS assign the final result to a variable called 'result' "
+            "- DO NOT attempt to modify the data in the csv files. "
             "\n\n"
             f"CSV files location: Azure storage account. Container name: {self.container_name}. Connection string: {self.connection_string}"
             "\n\n"
-            "Use the following function to load csv files:"
+            "Use the following function to load csv files: "
             """```python
             def load_csv_file(file_name, blob_container, blob_service_client):
                 blob_client = blob_service_client.get_blob_client(container=blob_container, blob=file_name)
@@ -97,12 +97,12 @@ class AgentCsv:
 
         # A prompt to double check the generated code and adjust if needed
         self.code_reviewer_prompt = (
-            "You are a Python expert with a strong attention to detail."
-            "Double check the Python code for common mistakes."
-            "Ensure the final result is assigned to a variable called 'result'."
-            "Ensure the code is executable."
-            "If you see any mistakes, rewrite the code. If there are no mistakes, just reproduce the original code."
-            "Respond only with the rewritten code or the original code, nothing else."
+            "You are a Python expert with a strong attention to detail. "
+            "Double check the Python code for common mistakes. "
+            "Ensure the final result is assigned to a variable called 'result'. "
+            "Ensure the code is executable. "
+            "If you see any mistakes, rewrite the code. If there are no mistakes, just reproduce the original code. "
+            "Respond only with the rewritten code or the original code, nothing else. "
         )
 
         self.code_reviewer_chain = (
@@ -113,16 +113,13 @@ class AgentCsv:
             | self.parser
         )
 
-        # A prompt to generate an answer to the question given the information pulled from the database
+        # A prompt to generate an answer to the question given the information pulled from the csv
         self.answer_generator_prompt = (
-            "You are an AI assistant for question-answering tasks."
-            "Your skills are listed below, these skills dictate what you can answer about."
-            "Use only the following user question, corresponding Python code, Python result, and your knowledge about your skills to answer the question. " 
-            "If you cannot find the answer, say that you don't know."
-            "Never make up information that is not in the provided results nor in your list of skills." 
-            "Use three sentences maximum and keep the answer concise."
-            "\n\n"
-            f"Your skills: {config['agent_directive']}"
+            "You are an AI assistant for question-answering tasks. "
+            "Use only the following Python code and result to answer the question. " 
+            "If you cannot find the answer, say that you don't know. "
+            "Never make up information that is not in the provided data. " 
+            "Use three sentences maximum and keep the answer concise. "
             "\n\n"
             "Python code: {code}"
             "\n\n"
@@ -135,6 +132,27 @@ class AgentCsv:
             { "question": RunnableLambda(lambda inputs: inputs["question"]), "code": RunnableLambda(lambda inputs: inputs["code"]), "result": RunnableLambda(lambda inputs: inputs["result"]), "history": RunnableLambda(lambda inputs: inputs["history"]) }
             #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
             | RunnableLambda(lambda inputs: self.prompt({"system_prompt": self.answer_generator_prompt, "human_prompt": inputs["question"]}))
+            | self.llm
+            | self.parser
+        )
+
+        self.entry_point_prompt = (
+            "You are an AI assistant for question-answering tasks. "
+            f"This is what you can do: {config['agent_directive']} "
+            "\n\n"
+            "Given the following user question, analyze if you can answer it based solely on what you know about your skills and the data from previous conversations. "
+            "If you have a clear answer, provide it. " 
+            "If you are not sure, then answer with 'CONTINUE', nothing else. "
+            "If the user asked you to look for more information, then answer with 'CONTINUE', nothing else. "
+            "Never make up information that is not in the provided data. " 
+            "\n\n"
+            "Chat history: {history}"
+        )
+
+        self.entry_point_chain = (
+            { "question": RunnableLambda(lambda inputs: inputs["question"]), "history": RunnableLambda(lambda inputs: inputs["history"]) }
+            #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
+            | RunnableLambda(lambda inputs: self.prompt({"system_prompt": self.entry_point_prompt, "human_prompt": inputs["question"]}))
             | self.llm
             | self.parser
         )
@@ -201,27 +219,31 @@ class AgentCsv:
             # Filter agent history
             agent_history = filter_agent_history(state["history"], self.name)
 
-            # Get index file
-            index = self.get_index()
-
-            # Get relevant files
-            relevant_files = self.get_relevant_files(state['question'], index, agent_history)
-            
-            # Get an extract from the relevant files
-            context = self.get_files_head(relevant_files)
-
-            # Generate Python code to interact with the files
-            code = self.generate_code(state['question'], context, agent_history)
-
-            # Execute the code
-            result = self.run_code(code)
-
-            # Finally answer the question
-            print(f"{self.name} says: generating answer...")
-            answer = self.answer_generator_chain.invoke({"question": state["question"], "code": code, "result": result, "history": agent_history})
+            # Check if it can answer the question right away or if it needs to continue
+            answer = self.entry_point_chain.invoke({"question": state["question"], "history": agent_history})
             print(f"{self.name} says: {answer}")
+            if answer == 'CONTINUE':
+                # Get index file
+                index = self.get_index()
+
+                # Get relevant files
+                relevant_files = self.get_relevant_files(state['question'], index, agent_history)
+                
+                # Get an extract from the relevant files
+                context = self.get_files_head(relevant_files)
+
+                # Generate Python code to interact with the files
+                code = self.generate_code(state['question'], context, agent_history)
+
+                # Execute the code
+                result = self.run_code(code)
+
+                # Finally answer the question
+                print(f"{self.name} says: generating answer...")
+                answer = self.answer_generator_chain.invoke({"question": state["question"], "code": code, "result": result, "history": agent_history})
+                print(f"{self.name} says: {answer}")
+            
             state["agents"][f"{self.name}"] = answer
-            print(state)
             return state
         
         except Exception as e:
