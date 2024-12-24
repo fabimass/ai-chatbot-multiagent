@@ -69,7 +69,6 @@ class AgentCsv:
             "- Ensure the code is executable. "
             "- ALWAYS assign the final result to a variable called 'result'. "
             "- DO NOT attempt to modify the data in the csv files. "
-            "- DO NOT use f-strings to inject variables, it is preferred to concatenate strings. "
             "\n\n"
             f"CSV files location: Azure storage account. Container name: {self.container_name}. Connection string: {self.connection_string}"
             "\n\n"
@@ -195,7 +194,7 @@ class AgentCsv:
         print(f"{self.name} says: {code}")
 
         print(f"{self.name} says: reviewing code...")
-        reviewed_code = self.code_reviewer_chain.invoke(code)
+        reviewed_code = self.code_reviewer_chain.invoke(code.replace("{", "{{").replace("}", "}}"))
         print(f"{self.name} says: {reviewed_code}")
         
         cleaned_code = re.sub(r"^```python\n", "", reviewed_code)  # Remove start markdown
@@ -241,7 +240,7 @@ class AgentCsv:
 
                 # Finally answer the question
                 print(f"{self.name} says: generating answer...")
-                answer = self.answer_generator_chain.invoke({"question": state["question"], "code": code, "result": result, "history": agent_history})
+                answer = self.answer_generator_chain.invoke({"question": state["question"], "code": code.replace("{", "{{").replace("}", "}}"), "result": result, "history": agent_history})
                 print(f"{self.name} says: {answer}")
             
             state["agents"][f"{self.name}"] = answer
