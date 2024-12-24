@@ -28,7 +28,7 @@ csv_config = {
 
 api_config = {
     "agent_id": "api",
-    "agent_directive": "...",
+    "agent_directive": "You are able to query GitHub API and answer questions using the obtained results.",
     "spec_url": os.getenv("API_SPEC_URL"),
     "spec_format": os.getenv("API_SPEC_FORMAT"),
     "endpoint_filter": ["/users/{username}"]
