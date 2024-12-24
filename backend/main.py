@@ -2,11 +2,12 @@ import os
 import uuid
 from http.client import HTTPException
 from fastapi import FastAPI, Depends
-from config import rag_config, sql_config, csv_config
+from config import rag_config, sql_config, csv_config, api_config
 from modules.models import QuestionModel, AnswerModel, FeedbackModel
 from modules.agent_rag import AgentRag
 from modules.agent_sql import AgentSql
 from modules.agent_csv import AgentCsv
+from modules.agent_api import AgentApi
 from modules.supervisor import Supervisor
 from modules.summarizer import Summarizer
 from modules.graph import Graph
@@ -26,7 +27,9 @@ def initial_setup():
     print(f"{agent_sql.name} ready.")
     agent_csv = AgentCsv(csv_config)
     print(f"{agent_csv.name} ready.")
-    agents = [agent_rag, agent_sql, agent_csv]
+    agent_api = AgentApi(api_config)
+    print(f"{agent_api.name} ready.")
+    agents = [agent_rag, agent_sql, agent_csv, agent_api]
 
     # Supervisor & summarizer instantiation
     supervisor = Supervisor(agents)

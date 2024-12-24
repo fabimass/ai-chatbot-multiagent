@@ -25,3 +25,11 @@ csv_config = {
     "container_name": os.getenv("CSV_CONTAINER"),
     "index_file_name": "index.csv"
 }
+
+api_config = {
+    "agent_id": "api",
+    "agent_directive": "...",
+    "spec_url": os.getenv("API_SPEC_URL"),
+    "spec_format": os.getenv("API_SPEC_FORMAT"),
+    "endpoint_filter": ["/users/{username}"]
+}
