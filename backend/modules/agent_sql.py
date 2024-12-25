@@ -11,9 +11,8 @@ class AgentSql:
     def __init__(self, config): 
         self.name = f"agent_{config['agent_id']}"
         
-        # Database instantiation
-        self.db_uri = config["connection_string"]
-        self.db = self.connect()
+        # Database instantiation 
+        self.db = self.connect(config)
         
         # LLM instantiation
         self.llm = AzureChatOpenAI(
@@ -126,10 +125,10 @@ class AgentSql:
             | self.parser
         )
 
-    def connect(self):
+    def connect(self, config):
         print(f"{self.name} says: connecting to database...")
         try:
-            db = SQLDatabase.from_uri(self.db_uri)
+            db = SQLDatabase.from_uri(config["connection_string"])
             print(f"{self.name} says: connection established.")
             return db
         except Exception as e:

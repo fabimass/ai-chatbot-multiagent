@@ -40,7 +40,7 @@ def agent_sql(config):
 
 def test_connect(agent_sql, config):
     with patch('modules.agent_sql.SQLDatabase') as MockSQL:
-        agent_sql.connect()
+        agent_sql.connect(config)
         MockSQL.from_uri.assert_called_once_with(config["connection_string"])
 
 def test_check_connection_success(agent_sql):
