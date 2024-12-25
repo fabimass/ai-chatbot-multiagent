@@ -11,21 +11,8 @@ class AgentRag:
     def __init__(self, config):
         self.name = f"agent_{config['agent_id']}"
         
-        # Embeddings model instantiation
-        if config["embeddings"] == "openai":
-            self.embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
-        elif config["embeddings"] == "google":    
-            self.embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-        else:
-            self.embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
-        
         # Vector store instantiation
-        self.vstore = AzureSearch(
-            azure_search_endpoint=config["azure_search_endpoint"],
-            azure_search_key=config["azure_search_key"],
-            index_name=config["index_name"],
-            embedding_function=self.embeddings.embed_query
-        )
+        self.vstore = self.connect(config)
 
         # LLM instantiation
         self.llm = AzureChatOpenAI(
@@ -86,7 +73,41 @@ class AgentRag:
             | self.llm
             | self.parser
         )
-       
+
+    def connect(self, config):
+        print(f"{self.name} says: connecting to vector store...")
+        try:
+            # Embeddings model instantiation
+            if config["embeddings"] == "openai":
+                embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
+            elif config["embeddings"] == "google":    
+                embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+            else:
+                embeddings = AzureOpenAIEmbeddings(model="ada-002", openai_api_version="2024-06-01")
+
+            # Connect to the vector store    
+            vstore = AzureSearch(
+                azure_search_endpoint=config["azure_search_endpoint"],
+                azure_search_key=config["azure_search_key"],
+                index_name=config["index_name"],
+                embedding_function=embeddings.embed_query
+            )
+            print(f"{self.name} says: connection established.")
+            return vstore
+        except Exception as e:
+            print(f"{self.name} says: ERROR {e}")
+            return None
+
+    def check_connection(self):
+        print(f"{self.name} says: checking connection to vector store...")
+        try:
+            self.vstore.similarity_search("test", k=1)
+            print(f"{self.name} says: connection up and running.")
+            return True
+        except:
+            print(f"{self.name} says: there is no open connection.")
+            return False
+
     def retrieve_context(self, query):
         print(f"{self.name} says: retrieving relevant information...")      
         docs = self.vstore.similarity_search(query, k=3)

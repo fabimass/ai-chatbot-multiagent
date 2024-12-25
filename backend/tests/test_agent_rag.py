@@ -37,23 +37,29 @@ def agent_rag(config):
         
         return AgentRag(config)
 
-def test_embeddings_initialization(config):
+def test_connect(agent_rag, config):
     # Test initialization with different embeddings configurations
     with patch('modules.agent_rag.AzureOpenAIEmbeddings') as MockOpenAIEmbeddings, \
          patch('modules.agent_rag.GoogleGenerativeAIEmbeddings') as MockGoogleEmbeddings, \
-         patch('modules.agent_rag.AzureSearch') as MockAzureSearch, \
-         patch('modules.agent_rag.AzureChatOpenAI') as MockLLM:
+         patch('modules.agent_rag.AzureSearch') as MockAzureSearch:
         
         # Test with OpenAI embeddings
-        agent = AgentRag(config)
+        agent_rag.connect(config)
         MockOpenAIEmbeddings.assert_called_once_with(model="ada-002", openai_api_version="2024-06-01")
-        assert isinstance(agent.embeddings, MagicMock)
+        MockAzureSearch.assert_called_once()
 
         # Test with Google embeddings
         config["embeddings"] = "google"
-        agent = AgentRag(config)
-        MockGoogleEmbeddings.assert_called_once_with(model="models/embedding-001")
-        assert isinstance(agent.embeddings, MagicMock)
+        agent_rag.connect(config)
+        MockGoogleEmbeddings.assert_called_once_with(model="models/embedding-001")     
+
+def test_check_connection_success(agent_rag):
+    agent_rag.vstore.similarity_search = MagicMock(return_value=None)
+    assert agent_rag.check_connection() is True
+
+def test_check_connection_failure(agent_rag):
+    agent_rag.vstore.similarity_search = MagicMock(side_effect=Exception("Connection error"))
+    assert agent_rag.check_connection() is False
 
 def test_retrieve_context(agent_rag, test_variables):    
     # Mock similarity search results
