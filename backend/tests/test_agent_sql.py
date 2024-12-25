@@ -38,6 +38,11 @@ def agent_sql(config):
         
         return AgentSql(config)
 
+def test_connect(agent_sql, config):
+    with patch('modules.agent_sql.SQLDatabase') as MockSQL:
+        agent_sql.connect()
+        MockSQL.from_uri.assert_called_once_with(config["connection_string"])
+
 def test_check_connection_success(agent_sql):
     agent_sql.db.run = MagicMock(return_value=None)
     assert agent_sql.check_connection() is True
