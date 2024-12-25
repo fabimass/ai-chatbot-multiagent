@@ -13,12 +13,9 @@ class AgentCsv:
     
     def __init__(self, config): 
         self.name = f"agent_{config['agent_id']}"
-        self.index_file_name = config["index_file_name"]
-        self.container_name = config["container_name"]
-        self.connection_string = config["connection_string"]
-        print(f"{self.name} says: connecting to Azure Blob Storage...")
-        self.blob_service_client = BlobServiceClient.from_connection_string(self.connection_string)
-        print(f"{self.name} says: connection established.")
+        
+        # Blob storage instantiation
+        self.blob_service_client = self.connect(config)
         
         # LLM instantiation
         self.llm = AzureChatOpenAI(
@@ -156,6 +153,29 @@ class AgentCsv:
             | self.llm
             | self.parser
         )
+
+    def connect(self, config):
+        self.index_file_name = config["index_file_name"]
+        self.container_name = config["container_name"]
+        self.connection_string = config["connection_string"]
+        print(f"{self.name} says: connecting to Azure Blob Storage...")
+        try:
+            blob_client = BlobServiceClient.from_connection_string(self.connection_string)
+            print(f"{self.name} says: connection established.")
+            return blob_client
+        except Exception as e:
+            print(f"{self.name} says: ERROR {e}")
+            return None
+        
+    def check_connection(self):
+        print(f"{self.name} says: checking connection to storage account...")
+        try:
+            self.blob_service_client.get_blob_client(container=self.container_name, blob=self.index_file_name)
+            print(f"{self.name} says: connection up and running.")
+            return True
+        except:
+            print(f"{self.name} says: there is no open connection.")
+            return False
 
     def get_index(self):
         print(f"{self.name} says: retrieving index file...")

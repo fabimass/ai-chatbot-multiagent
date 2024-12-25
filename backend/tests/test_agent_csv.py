@@ -39,6 +39,19 @@ def agent_csv(config):
         MockLLM.return_value = MagicMock()
         
         return AgentCsv(config)
+    
+def test_connect(agent_csv, config):
+    with patch('modules.agent_csv.BlobServiceClient') as MockBlob:
+        agent_csv.connect(config)
+        MockBlob.from_connection_string.assert_called_once_with(config["connection_string"])     
+
+def test_check_connection_success(agent_csv):
+    agent_csv.blob_service_client.get_blob_client = MagicMock(return_value=None)
+    assert agent_csv.check_connection() is True
+
+def test_check_connection_failure(agent_csv):
+    agent_csv.blob_service_client.get_blob_client = MagicMock(side_effect=Exception("Connection error"))
+    assert agent_csv.check_connection() is False
 
 def test_get_index(agent_csv, test_variables):
     # Mock Azure Blob Storage responses
