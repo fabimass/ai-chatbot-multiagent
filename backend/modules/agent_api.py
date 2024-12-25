@@ -150,7 +150,6 @@ class AgentApi:
 
         try:
             response = requests.get(self.spec_url)
-            print(response)
             spec = response.text
 
             if format == "yaml":
