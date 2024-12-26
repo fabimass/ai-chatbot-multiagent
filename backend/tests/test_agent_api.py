@@ -72,6 +72,16 @@ def agent_api(config, test_variables):
          
         return AgentApi(config)
 
+def test_check_connection_success(agent_api):
+    with patch('modules.agent_api.requests') as MockRequests:
+      MockRequests.get.return_value.status_code = 200
+      assert agent_api.check_connection() is True
+
+def test_check_connection_failure(agent_api):
+     with patch('modules.agent_api.requests') as MockRequests:
+      MockRequests.get.return_value.status_code = 401
+      assert agent_api.check_connection() is False
+
 def test_get_spec(agent_api, test_variables):
     with patch('modules.agent_api.requests') as MockRequests:
         

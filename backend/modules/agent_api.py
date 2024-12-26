@@ -146,6 +146,23 @@ class AgentApi:
             | self.parser
         )
 
+    def check_connection(self):
+        print(f"{self.name} says: checking connection to API...")
+        try:
+            username = "fabimass"
+            url = f"https://api.github.com/users/{username}/repos"
+            response = requests.get(url)
+
+            if response.status_code == 200:
+                print(f"{self.name} says: connection up and running.")
+                return True
+            else:
+                print(f"{self.name} says: connection failed.")
+                return False
+        except:
+            print(f"{self.name} says: connection failed.")
+            return False
+
     def get_spec(self, format):
         print(f"{self.name} says: retrieving api specification...")
 
