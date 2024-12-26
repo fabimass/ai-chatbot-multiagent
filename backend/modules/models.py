@@ -16,5 +16,6 @@ class FeedbackModel(AnswerModel):
 class State(TypedDict):
     question: str
     agents: dict
+    relevant_agents: list
     answer: str
     history: list

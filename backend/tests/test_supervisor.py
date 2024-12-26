@@ -21,9 +21,11 @@ def supervisor():
         
         return Supervisor(agents)
 
-def test_generate_answer(supervisor):   
+def test_generate_answer(supervisor):
+    relevant_agents = ["agent_1", "agent_2", "agent_3"]   
+
     # Test picking the next agent
-    state = {"question": "test_question"}
+    state = {"question": "test_question", "relevant_agents": relevant_agents}
     result = supervisor.generate_answer(state)
     assert result == {"next": "agent_1"}
 

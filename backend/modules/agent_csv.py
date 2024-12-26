@@ -13,6 +13,7 @@ class AgentCsv:
     
     def __init__(self, config): 
         self.name = f"agent_{config['agent_id']}"
+        self.skills = config['agent_directive']
         
         # Blob storage instantiation
         self.blob_service_client = self.connect(config)
@@ -135,7 +136,7 @@ class AgentCsv:
 
         self.entry_point_prompt = (
             "You are an AI assistant for question-answering tasks. "
-            f"This is what you can do: {config['agent_directive']} "
+            f"This is what you can do: {self.skills} "
             "\n\n"
             "Given the following user question, analyze if you can answer it based solely on what you know about your skills and the data from previous conversations. "
             "If you have a clear answer, provide it. " 

@@ -35,14 +35,15 @@ def test_graph_initialization(mock_supervisor, mock_summarizer, mock_agents):
         MockStateGraph.return_value = MagicMock()
 
         # Create the Graph instance
-        graph = Graph(mock_supervisor, mock_summarizer, mock_agents)
+        Graph(mock_supervisor, mock_summarizer, mock_agents)
         
         # Verify StateGraph initialization
         MockStateGraph.assert_called_once_with(State)
 
         # Verify nodes are added
         calls_add_node = [
-            call("supervisor_node", mock_supervisor.generate_answer),
+            call("supervisor_agent_filter_node", mock_supervisor.get_relevant_agents),
+            call("supervisor_agent_picker_node", mock_supervisor.generate_answer),
             call("summarizer_node", mock_summarizer.generate_answer),
             call("agent1_node", mock_agents[0].generate_answer),
             call("agent2_node", mock_agents[1].generate_answer),
@@ -51,7 +52,7 @@ def test_graph_initialization(mock_supervisor, mock_summarizer, mock_agents):
 
         # Verify conditional edges
         MockStateGraph.return_value.add_conditional_edges.assert_called_once_with(
-            "supervisor_node",
+            "supervisor_agent_picker_node",
             MockRunnableLambda.return_value,
             {
                 "agent1": "agent1_node",
@@ -62,11 +63,11 @@ def test_graph_initialization(mock_supervisor, mock_summarizer, mock_agents):
 
         # Verify edges back to supervisor
         calls_add_edge = [
-            call("agent1_node", "supervisor_node"),
-            call("agent2_node", "supervisor_node"),
+            call("agent1_node", "supervisor_agent_picker_node"),
+            call("agent2_node", "supervisor_agent_picker_node"),
         ]
         MockStateGraph.return_value.add_edge.assert_has_calls(calls_add_edge, any_order=True)
 
         # Verify entry point and graph compilation
-        MockStateGraph.return_value.set_entry_point.assert_called_once_with("supervisor_node")
+        MockStateGraph.return_value.set_entry_point.assert_called_once_with("supervisor_agent_filter_node")
         MockStateGraph.return_value.compile.assert_called_once()
