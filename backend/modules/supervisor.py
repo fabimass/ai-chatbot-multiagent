@@ -21,7 +21,7 @@ class Supervisor:
 
         # The system prompt guides the agent on how to respond
         self.system_prompt = (
-            f"You are a supervisor tasked with managing a conversation between the following agents: {str(self.agents).replace("{", "{{").replace("}", "}}")}. "
+            f"You are a supervisor tasked with managing a conversation between the following agents: {str(self.agents).replace('{', '{{').replace('}', '}}')}. "
             "Given an input question, think which would be the most capable agents to answer the question. "
             "Then provide a list of those agents. "
             "The list must be a comma separated string containing only the agent names. "
