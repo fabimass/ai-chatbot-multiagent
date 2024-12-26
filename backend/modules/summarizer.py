@@ -19,12 +19,10 @@ class Summarizer:
 
         # The system prompt guides the agent on how to respond
         self.system_prompt = (
-            f"You are an AI assistant tasked with summarizing a conversation between the following workers: {self.agents}."
-            "Given the following user question, all the workers will provide a response."
-            "Your task is to analyze each of the responses and provide the best possible response to the user."
-            "Do not make up new information that is not explicitly in the workers response."
-            "\n\n"
-            "Workers response: {agents_output}"
+            "You are an AI assistant tasked with summarizing a conversation between the following agents: {agents_output}. "
+            "Given the following user question, your task is to analyze each of the responses and provide the best possible response to the user. "
+            "Ignore agents that answered that they don't know or similar. "
+            "Do not make up new information that is not explicitly in the workers response. "
         )
 
         # The prompt puts together the system prompt with the user question
