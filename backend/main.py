@@ -48,7 +48,7 @@ def initial_setup():
     history_table = table_service.get_table_client("ChatHistory")
     print("History table client ready.") 
     
-    return { "graph": graph, "feedback_table": feedback_table, "history_table": history_table }
+    return { "graph": graph, "feedback_table": feedback_table, "history_table": history_table, "agents": agents }
 
 # Store initial setup in the application state during startup
 @app.on_event("startup")
@@ -60,11 +60,20 @@ def get_setup():
     return getattr(app.state, 'setup', {})
 
 
-# This endpoint returns the user prompt, for testing purposes
+# Endpoint to check that the backend is up and running
 @app.get("/api/ping")
 def ping():
     return "pong"
 
+# Endpoint to check the status of each agent
+@app.get("/api/ping/{agent_name}")
+def ping(agent_name, setup: dict = Depends(get_setup)):
+    for agent in setup["agents"]:
+        if agent.name == agent_name:
+            status = agent.check_connection()
+            return { "agent": agent.name, "healthy": status }
+
+    return "Agent not found"
 
 # This endpoint receives a prompt and generates a response
 @app.post("/api/ask")
