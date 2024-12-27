@@ -63,7 +63,7 @@ export const Navbar = () => {
         <NavbarMenuToggle />
       </NavbarContent>
 
-      <NavbarMenu>
+      <NavbarMenu className="bg-gray-50">
         <div className="mx-4 mt-2 flex flex-col gap-2">
           {agents.map((item) => (
             <NavbarMenuItem
