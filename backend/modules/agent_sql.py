@@ -11,9 +11,10 @@ class AgentSql:
     def __init__(self, config): 
         self.name = f"agent_{config['agent_id']}"
         self.skills = config['agent_directive']
+        self.connection_string = config["connection_string"]
         
         # Database instantiation 
-        self.db = self.connect(config)
+        self.db = self.connect()
         
         # LLM instantiation
         self.llm = AzureChatOpenAI(
@@ -126,10 +127,10 @@ class AgentSql:
             | self.parser
         )
 
-    def connect(self, config):
+    def connect(self):
         print(f"{self.name} says: connecting to database...")
         try:
-            db = SQLDatabase.from_uri(config["connection_string"])
+            db = SQLDatabase.from_uri(self.connection_string)
             print(f"{self.name} says: connection established.")
             return db
         except Exception as e:
@@ -178,10 +179,6 @@ class AgentSql:
         
         if "agents" not in state:
             state["agents"] = {}
-
-        # Reconnect with database if connection was closed
-        if(self.check_connection() is False):
-            self.db = self.connect()
         
         try:
             # Filter agent history
@@ -191,6 +188,10 @@ class AgentSql:
             answer = self.entry_point_chain.invoke({"question": state["question"], "history": agent_history})
             print(f"{self.name} says: {answer}")
             if answer == 'CONTINUE':
+                # Reconnect with database if connection was closed
+                if(self.check_connection() is False):
+                    self.db = self.connect()
+                
                 # Get tables and columns from the database
                 schema = self.get_schema()
 
