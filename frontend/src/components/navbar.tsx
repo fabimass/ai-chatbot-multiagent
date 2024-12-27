@@ -11,6 +11,7 @@ import { Spinner } from "@nextui-org/react";
 import { AgentIcon } from "@/components/icons";
 import { Logo } from "@/components/icons";
 import { useEffect, useState } from "react";
+import { getEnv } from "@/utils/getEnv";
 
 export const Navbar = () => {
   const [agents, setAgents] = useState([]);
@@ -18,7 +19,7 @@ export const Navbar = () => {
 
   // Get the status of the agents
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/agents`, {
+    fetch(`${getEnv()["backend_url"]}/api/agents`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

@@ -2,6 +2,7 @@ import DefaultLayout from "@/layouts/default";
 import { ChatInput } from "@/components/ChatInput";
 import { ChatHistory, ChatHistoryProps } from "@/components/ChatHistory";
 import { useState } from "react";
+import { getEnv } from "@/utils/getEnv";
 
 export default function IndexPage() {
   const [messages, setMessages] = useState<ChatHistoryProps["messages"]>([]);
@@ -18,7 +19,7 @@ export default function IndexPage() {
 
     setLoading(true);
 
-    fetch(`${import.meta.env.VITE_API_URL}/api/ask`, {
+    fetch(`${getEnv()["backend_url"]}/api/ask`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

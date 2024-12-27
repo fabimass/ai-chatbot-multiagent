@@ -1,6 +1,7 @@
 import { MessageBox } from "react-chat-elements";
 import { FaThumbsUp, FaThumbsDown } from "react-icons/fa";
 import { useState, useEffect } from "react";
+import { getEnv } from "@/utils/getEnv";
 
 export interface ChatMessageProps {
   text: string;
@@ -14,7 +15,7 @@ export const ChatMessage = ({ text, sender, previous }: ChatMessageProps) => {
   const [showIcons, setShowIcons] = useState(true); // Controls visibility of icons
 
   const sendFeedback = (sentiment: boolean) => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/feedback`, {
+    fetch(`${getEnv()["backend_url"]}/api/feedback`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
