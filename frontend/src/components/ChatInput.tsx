@@ -17,7 +17,7 @@ export const ChatInput = ({ onSend }: ChatInputProps) => {
   return (
     <>
       <div className="content-center flex justify-center items-center my-5">
-        <div className="relative w-3/4 max-w-[720px]">
+        <div className="relative w-[100%] max-w-[720px]">
           <Textarea
             placeholder="Ask me something..."
             onChange={(e) => setQuestion(e.target.value)}

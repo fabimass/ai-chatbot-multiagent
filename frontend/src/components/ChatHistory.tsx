@@ -19,7 +19,7 @@ export const ChatHistory = ({ messages }: ChatHistoryProps) => {
   return (
     <>
       <ScrollShadow
-        className="flex-grow px-[25%]"
+        className="flex-grow sm:px-[25%]"
         hideScrollBar
         ref={scrollbarsRef}
       >

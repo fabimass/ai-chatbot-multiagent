@@ -51,6 +51,7 @@ export const Navbar = () => {
           {loading && <Spinner size="sm" color="primary" />}
           {agents.map((agent) => (
             <AgentIcon
+              key={agent["agent"]}
               name={agent["agent"]}
               status={agent["healthy"]}
               tooltip={true}

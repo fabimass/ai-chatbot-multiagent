@@ -80,16 +80,16 @@ export const ChatMessage = ({ text, sender, previous }: ChatMessageProps) => {
           retracted={false}
         />
         {sender === "bot" && showIcons && (
-          <div className="flex space-x-2 mt-2 absolute top-1 right-4">
+          <div className="flex space-x-2 mt-2 absolute bottom-2 left-8">
             <button
               onClick={handleThumbsUp}
-              className={`text-lg ${liked === true ? "text-green-500" : "text-gray-500"} ${animating ? (liked === true ? "animate-ping" : "animate-fade") : ""} hover:text-green-300`}
+              className={`text-sm ${liked === true ? "text-green-500" : "text-gray-500"} ${animating ? (liked === true ? "animate-ping" : "animate-fade") : ""} hover:text-green-300`}
             >
               <FaThumbsUp />
             </button>
             <button
               onClick={handleThumbsDown}
-              className={`text-lg ${liked === false ? "text-red-500" : "text-gray-500"} ${animating ? (liked === false ? "animate-ping" : "animate-fade") : ""} hover:text-red-300`}
+              className={`text-sm ${liked === false ? "text-red-500" : "text-gray-500"} ${animating ? (liked === false ? "animate-ping" : "animate-fade") : ""} hover:text-red-300`}
             >
               <FaThumbsDown />
             </button>
