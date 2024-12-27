@@ -102,7 +102,7 @@ class AgentRag:
     def check_connection(self):
         print(f"{self.name} says: checking connection to vector store...")
         try:
-            self.vstore.similarity_search("test", k=1)
+            self.vstore.similarity_search("this is a test", k=3)
             print(f"{self.name} says: connection up and running.")
             return True
         except:
