@@ -1,12 +1,13 @@
-import { Textarea } from "@nextui-org/react";
+import { Textarea, Spinner } from "@nextui-org/react";
 import { Send28Filled } from "@fluentui/react-icons";
 import { useState } from "react";
 
 interface ChatInputProps {
   onSend: (question: string) => void;
+  loading: boolean;
 }
 
-export const ChatInput = ({ onSend }: ChatInputProps) => {
+export const ChatInput = ({ onSend, loading }: ChatInputProps) => {
   const [question, setQuestion] = useState<string>("");
 
   const handleSend = () => {
@@ -29,10 +30,14 @@ export const ChatInput = ({ onSend }: ChatInputProps) => {
             aria-label="Ask question button"
             onClick={handleSend}
           >
-            <Send28Filled
-              primaryFill="rgba(12, 105, 176, 1)"
-              className="cursor-pointer"
-            />
+            {loading ? (
+              <Spinner size="md" color="primary" />
+            ) : (
+              <Send28Filled
+                primaryFill="rgba(12, 105, 176, 1)"
+                className="cursor-pointer"
+              />
+            )}
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { useState } from "react";
 
 export default function IndexPage() {
   const [messages, setMessages] = useState<ChatHistoryProps["messages"]>([]);
+  const [loading, setLoading] = useState(false);
 
   // Generate a unique session_id for the user
   const sessionId =
@@ -14,6 +15,8 @@ export default function IndexPage() {
   const handleSendMessage = (msg: string) => {
     setMessages((history) => [...history, { text: msg, sender: "human" }]);
     console.log("human message: ", msg);
+
+    setLoading(true);
 
     fetch(`${import.meta.env.VITE_API_URL}/api/ask`, {
       method: "POST",
@@ -32,15 +35,22 @@ export default function IndexPage() {
           ...history,
           { text: result["answer"], sender: "bot" },
         ]);
+        setLoading(false);
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        setLoading(false);
+        console.error(error);
+      });
   };
 
   return (
     <DefaultLayout>
       <div className="flex flex-col h-full min-h-0">
         <ChatHistory messages={messages} />
-        <ChatInput onSend={(newQuestion) => handleSendMessage(newQuestion)} />
+        <ChatInput
+          onSend={(newQuestion) => handleSendMessage(newQuestion)}
+          loading={loading}
+        />
       </div>
     </DefaultLayout>
   );

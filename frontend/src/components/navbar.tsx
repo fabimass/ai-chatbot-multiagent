@@ -1,4 +1,3 @@
-import { Link } from "@nextui-org/link";
 import {
   Navbar as NextUINavbar,
   NavbarBrand,
@@ -12,7 +11,6 @@ import { Spinner } from "@nextui-org/react";
 import { AgentIcon } from "@/components/icons";
 import { Logo } from "@/components/icons";
 import { useEffect, useState } from "react";
-import { color } from "framer-motion";
 
 export const Navbar = () => {
   const [agents, setAgents] = useState([]);
