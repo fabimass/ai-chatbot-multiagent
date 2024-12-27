@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch, call
-from main import generate_answer, store_feedback, get_feedback_count, get_chat_history, add_to_chat_history, delete_chat_history
+from main import generate_answer, store_feedback, get_feedback_count, get_chat_history, add_to_chat_history, delete_chat_history, ping_agents
 from modules.models import QuestionModel, AnswerModel, FeedbackModel
 from datetime import datetime
 
@@ -8,10 +8,19 @@ from datetime import datetime
 # Fixture to mock the setup function
 @pytest.fixture(autouse=True)
 def mock_setup():
-    mock_setup = MagicMock()
+    mock_setup = {}
     mock_setup["graph"] = MagicMock()
     mock_setup["feedback_table"] = MagicMock()
     mock_setup["history_table"] = MagicMock()
+    MockAgent1 = MagicMock(check_connection=MagicMock())
+    MockAgent2 = MagicMock(check_connection=MagicMock())
+    agent_1 = MockAgent1.return_value
+    agent_1.name = "agent1"
+    agent_1.check_connection.return_value = True
+    agent_2 = MockAgent2.return_value
+    agent_2.name = "agent2"
+    agent_2.check_connection.return_value = False 
+    mock_setup["agents"] = [agent_1, agent_2]
     return mock_setup
 
 # Fixtures to moch the payloads
@@ -31,6 +40,12 @@ class MockEntity(dict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__dict__ = self
+
+def test_ping_agents(mock_setup):
+    response = ping_agents(setup=mock_setup)
+    assert len(response) == 2
+    assert response[0] == {"agent": "agent1", "healthy": True}
+    assert response[1] == {"agent": "agent2", "healthy": False}
 
 def test_generate_answer(mock_setup):
     mock_question = "What is the capital of France?"

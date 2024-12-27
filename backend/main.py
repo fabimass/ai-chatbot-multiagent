@@ -66,14 +66,13 @@ def ping():
     return "pong"
 
 # Endpoint to check the status of each agent
-@app.get("/api/ping/{agent_name}")
-def ping(agent_name, setup: dict = Depends(get_setup)):
+@app.get("/api/agents")
+def ping_agents(setup: dict = Depends(get_setup)):
+    agents = []
     for agent in setup["agents"]:
-        if agent.name == agent_name:
-            status = agent.check_connection()
-            return { "agent": agent.name, "healthy": status }
-
-    return "Agent not found"
+        status = agent.check_connection()
+        agents.append({ "agent": agent.name, "healthy": status })
+    return agents
 
 # This endpoint receives a prompt and generates a response
 @app.post("/api/ask")
