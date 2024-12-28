@@ -1,41 +1,16 @@
-### Document Ingestion Process
+# AI Multiagent Chatbot
 
-The document ingestion process is automatically triggered whenever an update occurs in the `knowledge-base` folder. This process is handled by the `Update Database` pipeline, which performs the following steps:
+Hi! You've come across the final project for my post-graduate specialization in AI!
 
-1. **Document Format**: The pipeline processes only files in PDF or Markdown format. Ensure that all documents in the `knowledge-base` folder meet this requirement.
+This is a versatile and intelligent chatbot powered by multiple specialized agents, designed to tackle a wide variety of tasks:
 
-2. **Document Splitting**: Upon triggering, the pipeline splits the documents into smaller chunks for efficient embedding generation and retrieval.
+- RAG Agent: Retrieves and generates precise answers from documents using advanced retrieval-augmented generation techniques.
+- SQL Agent: Dynamically queries databases to provide insights and data-driven answers.
+- CSV Agent: Processes and analyzes CSV files to respond based on structured data.
+- API Agent: Makes real-time API requests to fetch relevant information and deliver actionable responses.
 
-3. **Embedding Generation**: Each document chunk is transformed into embeddings, which are vector representations that capture the semantic meaning of the text. These embeddings are later used for similarity search and response generation.
+With this multiagent architecture, the chatbot seamlessly integrates diverse data sources and APIs, making it a powerful tool for information retrieval.
 
-4. **Database Purge**: Before the ingestion process begins, the existing data in the database is completely purged. This means that all previous entries are deleted, ensuring that the only documents available in the database are the ones currently present in the `knowledge-base` folder.
+Explore the code, customize the agents, and deploy your own multiagent chatbot tailored to your needs! You will find the [documentation here](https://github.com/fabimass/ai-chatbot-multiagent/wiki).
 
-5. **Database Update**: Once the database is cleared, the newly generated embeddings from the documents in the `knowledge-base` folder are uploaded to the database.
-
-### Required Secrets and Variables
-
-For the pipeline to work correctly, you must create the following **secrets** in the repository:
-
-- `AZURE_CLIENT_ID`
-- `AZURE_CLIENT_SECRET`
-- `AZURE_OPENAI_API_KEY`
-- `AZURE_OPENAI_ENDPOINT`
-- `AZURE_OPENAI_SERVICE_NAME`
-- `AZURE_RESOURCE_GROUP`
-- `AZURE_SEARCH_KEY`
-- `AZURE_SEARCH_SERVICE_NAME`
-- `AZURE_SEARCH_URI`
-- `AZURE_SUBSCRIPTION_ID`
-- `AZURE_TENANT_ID`
-- `GOOGLE_API_KEY`
-
-Additionally, the following **variables** need to be set:
-
-- `RAG_INDEX`
-- `EMBEDDINGS_MODEL`
-
-### Important Notes:
-
-- **Trigger**: The ingestion process is triggered automatically whenever a change is detected in the `knowledge-base` folder.
-- **Persistence**: Any document not currently in the `knowledge-base` folder will be removed from the database during the purge step.
-- **Supported Formats**: Ensure that only PDF and Markdown files are added to the folder, as other formats are not supported by the pipeline.
+![chatbot image](./docs/images/chatbot.png)
