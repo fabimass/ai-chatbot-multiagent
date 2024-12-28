@@ -44,8 +44,8 @@ class MockEntity(dict):
 def test_ping_agents(mock_setup):
     response = ping_agents(setup=mock_setup)
     assert len(response) == 2
-    assert response[0] == {"agent": "agent1", "healthy": True}
-    assert response[1] == {"agent": "agent2", "healthy": False}
+    assert response[0] == {"agent": "agent1", "healthy": True, "info":""}
+    assert response[1] == {"agent": "agent2", "healthy": False, "info":""}
 
 def test_generate_answer(mock_setup):
     mock_question = "What is the capital of France?"

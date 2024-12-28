@@ -158,7 +158,7 @@ class AgentApi:
                 return { "healthy": True, "info": "Agent up and running" }
             else:
                 print(f"{self.name} says: connection failed.")
-                return False
+                return { "healthy": False, "info": response.status_code }
         except Exception as e:
             print(f"{self.name} says: ERROR {e}")
             return { "healthy": False, "info": e }
