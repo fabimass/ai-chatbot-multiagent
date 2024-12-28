@@ -6,7 +6,7 @@ on:
       - "backend/**"
 
 env:
-  AZURE_WEBAPP_NAME: "chatwithfabi-dev-backend"
+  AZURE_WEBAPP_NAME: ${{ vars.AZURE_BACKEND_NAME }}
   WORKING_DIRECTORY: "backend"
   PYTHON_VERSION: "3.10"
   STARTUP_COMMAND: "gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app"
