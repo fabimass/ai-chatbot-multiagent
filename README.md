@@ -13,6 +13,6 @@ With this multiagent architecture, the chatbot seamlessly integrates diverse dat
 
 Explore the code, customize the agents, and deploy your own multiagent chatbot tailored to your needs! 🚀
 
-🗎[Link to the documentation](https://github.com/fabimass/ai-chatbot-multiagent/wiki).
+📖🤓[Link to the documentation](https://github.com/fabimass/ai-chatbot-multiagent/wiki).
 
 ![chatbot image](./docs/images/chatbot.png)
