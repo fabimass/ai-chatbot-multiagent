@@ -11,7 +11,7 @@ export const ChatInput = ({ onSend, loading }: ChatInputProps) => {
   const [question, setQuestion] = useState<string>("");
 
   const handleSend = () => {
-    if (question != "") {
+    if (question != "" && question != "\n") {
       onSend(question);
       setQuestion("");
     }

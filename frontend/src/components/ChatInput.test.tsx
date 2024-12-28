@@ -81,6 +81,13 @@ describe("ChatInput component", () => {
     // Click send button without typing
     fireEvent.click(sendButton);
 
+    // Press Enter key
+    fireEvent.keyUp(screen.getByPlaceholderText("Ask me something..."), {
+      key: "Enter",
+      code: "Enter",
+      charCode: 13,
+    });
+
     // Check if onSend was not called
     expect(onSendMock).not.toHaveBeenCalled();
   });
