@@ -71,7 +71,7 @@ def ping_agents(setup: dict = Depends(get_setup)):
     agents = []
     for agent in setup["agents"]:
         status = agent.check_connection()
-        agents.append({ "agent": agent.name, "healthy": status })
+        agents.append({ "agent": agent.name, "healthy": status["healthy"], "info": status["info"] })
     return agents
 
 # This endpoint receives a prompt and generates a response

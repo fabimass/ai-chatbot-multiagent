@@ -55,11 +55,11 @@ def test_connect(agent_rag, config):
 
 def test_check_connection_success(agent_rag):
     agent_rag.vstore.similarity_search = MagicMock(return_value=None)
-    assert agent_rag.check_connection() is True
+    assert agent_rag.check_connection()["healthy"] is True
 
 def test_check_connection_failure(agent_rag):
     agent_rag.vstore.similarity_search = MagicMock(side_effect=Exception("Connection error"))
-    assert agent_rag.check_connection() is False
+    assert agent_rag.check_connection()["healthy"] is False
 
 def test_retrieve_context(agent_rag, test_variables):    
     # Mock similarity search results

@@ -173,10 +173,10 @@ class AgentCsv:
         try:
             self.blob_service_client.get_blob_client(container=self.container_name, blob=self.index_file_name)
             print(f"{self.name} says: connection up and running.")
-            return True
-        except:
-            print(f"{self.name} says: there is no open connection.")
-            return False
+            return { "healthy": True, "info": "Agent up and running" }
+        except Exception as e:
+            print(f"{self.name} says: ERROR {e}")
+            return { "healthy": False, "info": e }
 
     def get_index(self):
         print(f"{self.name} says: retrieving index file...")

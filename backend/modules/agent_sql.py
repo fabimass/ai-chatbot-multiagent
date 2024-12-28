@@ -142,10 +142,10 @@ class AgentSql:
         try:
             self.db.run("""SELECT 1""")
             print(f"{self.name} says: connection up and running.")
-            return True
-        except:
-            print(f"{self.name} says: there is no open connection.")
-            return False
+            return { "healthy": True, "info": "Agent up and running" }
+        except Exception as e:
+            print(f"{self.name} says: ERROR {e}")
+            return { "healthy": False, "info": e }
 
     def get_schema(self):
         print(f"{self.name} says: retrieving database schema...")
@@ -189,7 +189,7 @@ class AgentSql:
             print(f"{self.name} says: {answer}")
             if answer == 'CONTINUE':
                 # Reconnect with database if connection was closed
-                if(self.check_connection() is False):
+                if(self.check_connection()["healthy"] is False):
                     self.db = self.connect()
                 
                 # Get tables and columns from the database

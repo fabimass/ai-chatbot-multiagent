@@ -104,10 +104,10 @@ class AgentRag:
         try:
             self.vstore.similarity_search("this is a test", k=3)
             print(f"{self.name} says: connection up and running.")
-            return True
-        except:
-            print(f"{self.name} says: there is no open connection.")
-            return False
+            return { "healthy": True, "info": "Agent up and running" }
+        except Exception as e:
+            print(f"{self.name} says: ERROR {e}")
+            return { "healthy": False, "info": e }
 
     def retrieve_context(self, query):
         print(f"{self.name} says: retrieving relevant information...")      

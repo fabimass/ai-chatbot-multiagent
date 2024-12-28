@@ -16,10 +16,10 @@ def mock_setup():
     MockAgent2 = MagicMock(check_connection=MagicMock())
     agent_1 = MockAgent1.return_value
     agent_1.name = "agent1"
-    agent_1.check_connection.return_value = True
+    agent_1.check_connection.return_value = {"healthy": True, "info": ""}
     agent_2 = MockAgent2.return_value
     agent_2.name = "agent2"
-    agent_2.check_connection.return_value = False 
+    agent_2.check_connection.return_value = {"healthy": False, "info": ""} 
     mock_setup["agents"] = [agent_1, agent_2]
     return mock_setup
 

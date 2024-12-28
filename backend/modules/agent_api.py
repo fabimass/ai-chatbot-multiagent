@@ -155,13 +155,13 @@ class AgentApi:
 
             if response.status_code == 200:
                 print(f"{self.name} says: connection up and running.")
-                return True
+                return { "healthy": True, "info": "Agent up and running" }
             else:
                 print(f"{self.name} says: connection failed.")
                 return False
-        except:
-            print(f"{self.name} says: connection failed.")
-            return False
+        except Exception as e:
+            print(f"{self.name} says: ERROR {e}")
+            return { "healthy": False, "info": e }
 
     def get_spec(self, format):
         print(f"{self.name} says: retrieving api specification...")
