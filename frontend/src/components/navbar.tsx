@@ -31,7 +31,10 @@ export const Navbar = () => {
         setAgents(result);
         setLoading(false);
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        setLoading(false);
+        console.error(error);
+      });
   }, []);
 
   return (

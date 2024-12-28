@@ -1,5 +1,5 @@
 import * as React from "react";
-import CustomLogo from "../assets/logo-fiuba.png";
+import CustomLogo from "@/assets/logo-fiuba.png";
 import { IconSvgProps } from "@/types";
 import { RiRobot3Fill } from "react-icons/ri";
 import { Badge, Tooltip, Button } from "@nextui-org/react";
