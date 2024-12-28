@@ -12,7 +12,7 @@ jest.mock("@/utils/getEnv", () => ({
 
 jest.mock("@/components/ChatHistory", () => ({
   ChatHistory: ({ messages }: { messages: any[] }) => (
-    <div>
+    <div data-testid="chat-history">
       {messages.map((msg: any, index: any) => (
         <div key={index}>
           <span>
@@ -25,12 +25,16 @@ jest.mock("@/components/ChatHistory", () => ({
 }));
 
 jest.mock("@/components/navbar", () => ({
-  Navbar: () => <div>Navbar</div>,
+  Navbar: () => <div data-testid="navbar">Navbar</div>,
 }));
 
 jest.mock("@/components/ChatInput", () => ({
   ChatInput: ({ onSend, loading }: { onSend: any; loading: boolean }) => (
-    <button onClick={() => onSend("Test message")} disabled={loading}>
+    <button
+      onClick={() => onSend("Test message")}
+      disabled={loading}
+      data-testid="send-button"
+    >
       Send
     </button>
   ),
@@ -38,7 +42,6 @@ jest.mock("@/components/ChatInput", () => ({
 
 describe("Index page", () => {
   beforeEach(() => {
-    // Reset localStorage and mock the fetch function before each test
     localStorage.clear();
     jest.clearAllMocks();
     (global.fetch as jest.Mock).mockResolvedValue({
@@ -50,14 +53,9 @@ describe("Index page", () => {
   it("renders correctly", () => {
     render(<IndexPage />);
 
-    // Expect text input to exist
-    expect(screen.getByText("Send")).toBeInTheDocument();
-
-    // Mock sending a message
-    fireEvent.click(screen.getByText("Send"));
-
-    // Expect the message to appear
-    expect(screen.getByText("human: Test message")).toBeInTheDocument();
+    expect(screen.getByTestId("navbar")).toBeInTheDocument();
+    expect(screen.getByTestId("send-button")).toBeInTheDocument();
+    expect(screen.getByTestId("chat-history")).toBeInTheDocument();
   });
 
   it("sets and uses a sessionId in localStorage", () => {
@@ -71,7 +69,10 @@ describe("Index page", () => {
     render(<IndexPage />);
 
     // Mock the message
-    fireEvent.click(screen.getByText("Send"));
+    fireEvent.click(screen.getByTestId("send-button"));
+
+    // Expect the message to appear
+    expect(screen.getByText("human: Test message")).toBeInTheDocument();
 
     // Wait for the API call to complete and check the response
     await waitFor(() =>
@@ -94,13 +95,15 @@ describe("Index page", () => {
     render(<IndexPage />);
 
     // Send the message
-    fireEvent.click(screen.getByText("Send"));
+    fireEvent.click(screen.getByTestId("send-button"));
 
     // Check that the button is disabled while loading
-    expect(screen.getByText("Send")).toBeDisabled();
+    expect(screen.getByTestId("send-button")).toBeDisabled();
 
     // Wait for the fetch call to complete and enable the button again
-    await waitFor(() => expect(screen.getByText("Send")).toBeEnabled());
+    await waitFor(() =>
+      expect(screen.getByTestId("send-button")).toBeEnabled()
+    );
   });
 
   it("handles errors gracefully", async () => {
@@ -108,11 +111,11 @@ describe("Index page", () => {
 
     render(<IndexPage />);
 
-    fireEvent.click(screen.getByText("Send"));
+    fireEvent.click(screen.getByTestId("send-button"));
 
     await waitFor(() => {
       // Ensure loading state is handled
-      expect(screen.getByText("Send")).toBeEnabled();
+      expect(screen.getByTestId("send-button")).toBeEnabled();
     });
   });
 });

@@ -6,7 +6,7 @@ global.fetch = jest.fn();
 
 jest.mock("@/utils/getEnv", () => ({
   getEnv: () => ({
-    backend_url: "localhost",
+    backend_url: "http://mocked-backend",
   }),
 }));
 
@@ -20,8 +20,8 @@ jest.mock("react-chat-elements", () => ({
 }));
 
 jest.mock("react-icons/fa", () => ({
-  FaThumbsUp: () => <div>ThumbsUp</div>,
-  FaThumbsDown: () => <div>ThumbsDown</div>,
+  FaThumbsUp: () => <div data-testid="thumbs-up">ThumbsUp</div>,
+  FaThumbsDown: () => <div data-testid="thumbs-down">ThumbsDown</div>,
 }));
 
 describe("ChatMessage component", () => {
@@ -38,8 +38,8 @@ describe("ChatMessage component", () => {
 
   it("shows thumbs up and thumbs down buttons for bot messages", () => {
     render(<ChatMessage text="Hello, bot here!" sender="bot" />);
-    expect(screen.getByText("ThumbsUp")).toBeInTheDocument();
-    expect(screen.getByText("ThumbsDown")).toBeInTheDocument();
+    expect(screen.getByTestId("thumbs-up")).toBeInTheDocument();
+    expect(screen.getByTestId("thumbs-down")).toBeInTheDocument();
   });
 
   it("does not show thumbs up and thumbs down buttons for human messages", () => {
@@ -61,7 +61,7 @@ describe("ChatMessage component", () => {
       />
     );
 
-    const thumbsUpButton = screen.getByText("ThumbsUp");
+    const thumbsUpButton = screen.getByTestId("thumbs-up");
     fireEvent.click(thumbsUpButton);
 
     expect(global.fetch).toHaveBeenCalledWith(
@@ -87,7 +87,7 @@ describe("ChatMessage component", () => {
       <ChatMessage text="I am a bot." sender="bot" previous="Who are you?" />
     );
 
-    const thumbsDownButton = screen.getByText("ThumbsDown");
+    const thumbsDownButton = screen.getByTestId("thumbs-down");
     fireEvent.click(thumbsDownButton);
 
     expect(global.fetch).toHaveBeenCalledWith(
@@ -111,7 +111,7 @@ describe("ChatMessage component", () => {
     jest.useFakeTimers();
     render(<ChatMessage text="Goodbye!" sender="bot" />);
 
-    const thumbsUpButton = screen.getByText("ThumbsUp");
+    const thumbsUpButton = screen.getByTestId("thumbs-up");
     fireEvent.click(thumbsUpButton);
 
     jest.advanceTimersByTime(900);

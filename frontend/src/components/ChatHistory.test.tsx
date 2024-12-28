@@ -4,7 +4,7 @@ import { ChatMessageProps } from "./ChatMessage";
 
 jest.mock("@nextui-org/react", () => ({
   ScrollShadow: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div> // Simplified mock, you can make it more sophisticated if needed
+    <div>{children}</div>
   ),
 }));
 
