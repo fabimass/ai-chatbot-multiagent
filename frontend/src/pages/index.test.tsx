@@ -1,16 +1,27 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import IndexPage from "@/pages/index";
 
 global.fetch = jest.fn();
+global.crypto.randomUUID = jest.fn();
 
 jest.mock("@/utils/getEnv", () => ({
   getEnv: () => ({
-    backend_url: "localhost",
+    backend_url: "http://mocked-backend",
   }),
 }));
 
 jest.mock("@/components/ChatHistory", () => ({
-  ChatHistory: () => <div>ChatHistory</div>,
+  ChatHistory: ({ messages }: { messages: any[] }) => (
+    <div>
+      {messages.map((msg: any, index: any) => (
+        <div key={index}>
+          <span>
+            {msg.sender}: {msg.text}
+          </span>
+        </div>
+      ))}
+    </div>
+  ),
 }));
 
 jest.mock("@/components/navbar", () => ({
@@ -18,7 +29,7 @@ jest.mock("@/components/navbar", () => ({
 }));
 
 jest.mock("@/components/ChatInput", () => ({
-  ChatInput: ({ onSend, loading }: { onSend: any; loading: any }) => (
+  ChatInput: ({ onSend, loading }: { onSend: any; loading: boolean }) => (
     <button onClick={() => onSend("Test message")} disabled={loading}>
       Send
     </button>
@@ -30,25 +41,30 @@ describe("Index page", () => {
     // Reset localStorage and mock the fetch function before each test
     localStorage.clear();
     jest.clearAllMocks();
-    localStorage.setItem("chatbot_session_id", "test-session-id");
     (global.fetch as jest.Mock).mockResolvedValue({
       json: () => ({ answer: "Mocked bot response" }),
     });
+    (global.crypto.randomUUID as jest.Mock).mockReturnValue("random-id");
   });
 
-  it("renders the layout and child components", () => {
+  it("renders correctly", () => {
     render(<IndexPage />);
 
-    // Check if DefaultLayout, ChatHistory, and ChatInput are rendered
-    expect(screen.getByText("Send")).toBeInTheDocument(); // Send button in ChatInput
-    expect(screen.getByText("human: Test message")).toBeInTheDocument(); // Mock message
+    // Expect text input to exist
+    expect(screen.getByText("Send")).toBeInTheDocument();
+
+    // Mock sending a message
+    fireEvent.click(screen.getByText("Send"));
+
+    // Expect the message to appear
+    expect(screen.getByText("human: Test message")).toBeInTheDocument();
   });
 
-  /*it("sets and uses a sessionId in localStorage", () => {
+  it("sets and uses a sessionId in localStorage", () => {
     render(<IndexPage />);
 
     const sessionId = localStorage.getItem("chatbot_session_id");
-    expect(sessionId).toBeTruthy();
+    expect(sessionId).toBe("random-id");
   });
 
   it("calls handleSendMessage and fetches a response", async () => {
@@ -88,7 +104,7 @@ describe("Index page", () => {
   });
 
   it("handles errors gracefully", async () => {
-    global.fetch.mockRejectedValueOnce(new Error("API Error"));
+    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("API Error"));
 
     render(<IndexPage />);
 
@@ -98,5 +114,5 @@ describe("Index page", () => {
       // Ensure loading state is handled
       expect(screen.getByText("Send")).toBeEnabled();
     });
-  });*/
+  });
 });
