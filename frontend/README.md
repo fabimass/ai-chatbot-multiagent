@@ -1,3 +1,27 @@
+# Run the frontend
+
+### Create environment file
+
+Create a `.env` file inside the `frontend/` folder with the following variables. Complete with the corresponding values.
+
+```
+VITE_API_URL=<the url of the backend>
+```
+
+### Install dependencies
+
+```bash
+npm install
+```
+
+### Run the development server
+
+```bash
+npm run dev
+```
+
+---
+
 # Vite & NextUI Template
 
 This is a template for creating applications using Vite and NextUI (v2).
