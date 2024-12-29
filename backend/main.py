@@ -209,4 +209,4 @@ def greetings(setup: dict = Depends(get_setup)):
         result = greeter.generate_answer()
         return {"answer": result["answer"]}
     except Exception as e:
-        return {"error": e}
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
