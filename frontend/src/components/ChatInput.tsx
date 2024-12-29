@@ -11,7 +11,7 @@ export const ChatInput = ({ onSend, loading }: ChatInputProps) => {
   const [question, setQuestion] = useState<string>("");
 
   const handleSend = () => {
-    if (question != "" && question != "\n") {
+    if (question != "") {
       onSend(question);
       setQuestion("");
     }
@@ -23,7 +23,7 @@ export const ChatInput = ({ onSend, loading }: ChatInputProps) => {
         <div className="relative w-[100%] max-w-[720px]">
           <Textarea
             placeholder="Ask me something..."
-            onChange={(e) => setQuestion(e.target.value)}
+            onChange={(e) => setQuestion(e.target.value.replace(/\n/g, ""))}
             onKeyUp={(e) => e.key === "Enter" && handleSend()}
             value={question}
           />

@@ -81,7 +81,7 @@ describe("ChatInput component", () => {
     // Click send button without typing
     fireEvent.click(sendButton);
 
-    // Press Enter key
+    // Press Enter key without typing
     fireEvent.keyUp(screen.getByPlaceholderText("Ask me something..."), {
       key: "Enter",
       code: "Enter",
