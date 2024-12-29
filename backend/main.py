@@ -10,6 +10,7 @@ from modules.agent_csv import AgentCsv
 from modules.agent_api import AgentApi
 from modules.supervisor import Supervisor
 from modules.summarizer import Summarizer
+from modules.greeter import Greeter
 from modules.graph import Graph
 from azure.data.tables import TableServiceClient, TableEntity
 
@@ -34,7 +35,7 @@ def initial_setup():
     # Supervisor & summarizer instantiation
     supervisor = Supervisor(agents)
     print("Supervisor ready.")
-    summarizer = Summarizer(agents)
+    summarizer = Summarizer()
     print("Summarizer ready.")
 
     # Graph instantiation
@@ -47,8 +48,12 @@ def initial_setup():
     print("Feedback table client ready.")
     history_table = table_service.get_table_client("ChatHistory")
     print("History table client ready.") 
+
+    # Greeter instantiation
+    greeter = Greeter(agents)
+    print("Greeter ready.")
     
-    return { "graph": graph, "feedback_table": feedback_table, "history_table": history_table, "agents": agents }
+    return { "graph": graph, "feedback_table": feedback_table, "history_table": history_table, "agents": agents, "greeter": greeter }
 
 # Store initial setup in the application state during startup
 @app.on_event("startup")
@@ -194,3 +199,14 @@ def delete_chat_history(session_id, setup: dict = Depends(get_setup)):
         )
         count += 1
     return {"message": f"Deleted {count} records successfully."}
+
+
+# Endpoint to provide a greetings message
+@app.get("/api/greetings")
+def greetings(setup: dict = Depends(get_setup)):
+    greeter = setup["greeter"]
+    try:
+        result = greeter.generate_answer()
+        return {"answer": result["answer"]}
+    except Exception as e:
+        return {"error": e}
