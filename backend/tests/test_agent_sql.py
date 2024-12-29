@@ -48,10 +48,15 @@ def test_check_connection_success(agent_sql):
     assert agent_sql.check_connection()["healthy"] is True
 
 def test_check_connection_failure(agent_sql):
-    agent_sql.connect = MagicMock(return_value=None)
-    agent_sql.db.run = MagicMock(side_effect=Exception("Connection error"))
+    agent_sql.connect = MagicMock(side_effect=[None, True])
+    agent_sql.db.run = MagicMock(side_effect=[Exception("Connection error"), Exception("Connection error")])
+    
+    # There is no connection and it fails to reconnect
     assert agent_sql.check_connection()["healthy"] is False
     agent_sql.connect.assert_called_once()
+
+    # There is no connection but it reconnects successfully
+    assert agent_sql.check_connection()["healthy"] is True
 
 def test_get_schema(agent_sql, test_variables):
     agent_sql.db.run = MagicMock(return_value=test_variables["mock_schema"])
@@ -97,6 +102,7 @@ def test_generate_answer_complete_flow(agent_sql, test_variables, config):
         MockFilterAgentHistory.return_value = test_variables["mock_history"]
         
         # Mock already tested methods
+        agent_sql.check_connection = MagicMock(return_value={"healthy": True})
         agent_sql.get_schema = MagicMock(return_value=test_variables["mock_schema"])
         agent_sql.generate_query = MagicMock(return_value=test_variables["mock_cleaned_query"])
         agent_sql.run_query = MagicMock(return_value=test_variables["mock_query_result"])
@@ -135,6 +141,7 @@ def test_generate_answer_skip_flow(agent_sql, test_variables, config):
         MockFilterAgentHistory.return_value = test_variables["mock_history"]
         
         # Mock already tested methods
+        agent_sql.check_connection = MagicMock(return_value={"healthy": True})
         agent_sql.get_schema = MagicMock(return_value=test_variables["mock_schema"])
         agent_sql.generate_query = MagicMock(return_value=test_variables["mock_cleaned_query"])
         agent_sql.run_query = MagicMock(return_value=test_variables["mock_query_result"])
@@ -149,6 +156,7 @@ def test_generate_answer_skip_flow(agent_sql, test_variables, config):
         agent_sql.llm.assert_called_once()
 
         # Assert no other methods were called
+        agent_sql.check_connection.assert_not_called()
         agent_sql.get_schema.assert_not_called()
         agent_sql.generate_query.assert_not_called()
         agent_sql.run_query.assert_not_called()

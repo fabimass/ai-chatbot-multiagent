@@ -14,9 +14,13 @@ class AgentCsv:
     def __init__(self, config): 
         self.name = f"agent_{config['agent_id']}"
         self.skills = config['agent_directive']
+        self.index_file_name = config["index_file_name"]
+        self.container_name = config["container_name"]
+        self.connection_string = config["connection_string"]
+        self.status = ""
         
         # Blob storage instantiation
-        self.blob_service_client = self.connect(config)
+        self.blob_service_client = self.connect()
         
         # LLM instantiation
         self.llm = AzureChatOpenAI(
@@ -155,10 +159,7 @@ class AgentCsv:
             | self.parser
         )
 
-    def connect(self, config):
-        self.index_file_name = config["index_file_name"]
-        self.container_name = config["container_name"]
-        self.connection_string = config["connection_string"]
+    def connect(self):
         print(f"{self.name} says: connecting to Azure Blob Storage...")
         try:
             blob_client = BlobServiceClient.from_connection_string(self.connection_string)
@@ -166,6 +167,7 @@ class AgentCsv:
             return blob_client
         except Exception as e:
             print(f"{self.name} says: ERROR {e}")
+            self.status = e
             return None
         
     def check_connection(self):
@@ -173,10 +175,13 @@ class AgentCsv:
         try:
             self.blob_service_client.get_blob_client(container=self.container_name, blob=self.index_file_name)
             print(f"{self.name} says: connection up and running.")
-            return { "healthy": True, "info": "Agent up and running" }
+            self.status = "up and running"
+            return { "healthy": True, "info": self.status }
         except Exception as e:
             print(f"{self.name} says: ERROR {e}")
-            return { "healthy": False, "info": e }
+            # Try to reconnect
+            self.blob_service_client = self.connect()
+            return { "healthy": True if self.blob_service_client is not None else False, "info": self.status }
 
     def get_index(self):
         print(f"{self.name} says: retrieving index file...")

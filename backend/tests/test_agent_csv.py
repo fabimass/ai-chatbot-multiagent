@@ -42,7 +42,7 @@ def agent_csv(config):
     
 def test_connect(agent_csv, config):
     with patch('modules.agent_csv.BlobServiceClient') as MockBlob:
-        agent_csv.connect(config)
+        agent_csv.connect()
         MockBlob.from_connection_string.assert_called_once_with(config["connection_string"])     
 
 def test_check_connection_success(agent_csv):
@@ -50,8 +50,15 @@ def test_check_connection_success(agent_csv):
     assert agent_csv.check_connection()["healthy"] is True
 
 def test_check_connection_failure(agent_csv):
-    agent_csv.blob_service_client.get_blob_client = MagicMock(side_effect=Exception("Connection error"))
+    agent_csv.connect = MagicMock(side_effect=[None, True])
+    agent_csv.blob_service_client.get_blob_client = MagicMock(side_effect=[Exception("Connection error"), Exception("Connection error")])
+    
+    # There is no connection and it fails to reconnect
     assert agent_csv.check_connection()["healthy"] is False
+    agent_csv.connect.assert_called_once()
+
+    # There is no connection but it reconnects successfully
+    assert agent_csv.check_connection()["healthy"] is True
 
 def test_get_index(agent_csv, test_variables):
     # Mock Azure Blob Storage responses
