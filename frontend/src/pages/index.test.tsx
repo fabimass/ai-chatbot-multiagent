@@ -50,12 +50,17 @@ describe("Index page", () => {
     (global.crypto.randomUUID as jest.Mock).mockReturnValue("random-id");
   });
 
-  it("renders correctly", () => {
+  it("renders correctly", async () => {
     render(<IndexPage />);
 
     expect(screen.getByTestId("navbar")).toBeInTheDocument();
     expect(screen.getByTestId("send-button")).toBeInTheDocument();
     expect(screen.getByTestId("chat-history")).toBeInTheDocument();
+
+    // Expect initial message from the bot
+    await waitFor(() =>
+      expect(screen.getByText("bot: Mocked bot response")).toBeInTheDocument()
+    );
   });
 
   it("sets and uses a sessionId in localStorage", () => {
@@ -87,7 +92,7 @@ describe("Index page", () => {
 
     // Verify that the message has been added to the chat history
     await waitFor(() =>
-      expect(screen.getByText("bot: Mocked bot response")).toBeInTheDocument()
+      expect(screen.getAllByText("bot: Mocked bot response").length).toBe(2)
     );
   });
 

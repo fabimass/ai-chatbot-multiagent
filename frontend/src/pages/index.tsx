@@ -1,7 +1,7 @@
 import DefaultLayout from "@/layouts/default";
 import { ChatInput } from "@/components/ChatInput";
 import { ChatHistory, ChatHistoryProps } from "@/components/ChatHistory";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getEnv } from "@/utils/getEnv";
 
 export default function IndexPage() {
@@ -12,6 +12,33 @@ export default function IndexPage() {
   const sessionId =
     localStorage.getItem("chatbot_session_id") || crypto.randomUUID();
   localStorage.setItem("chatbot_session_id", sessionId);
+
+  useEffect(() => {
+    fetch(`${getEnv()["backend_url"]}/api/greetings`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        setMessages((history) => [
+          ...history,
+          { text: result["answer"], sender: "bot" },
+        ]);
+      })
+      .catch((error) => {
+        setMessages((history) => [
+          ...history,
+          {
+            text: "whoops, something went wrong! 😵",
+            sender: "bot",
+          },
+        ]);
+        console.error(error);
+      });
+  }, []);
 
   const handleSendMessage = (msg: string) => {
     setMessages((history) => [...history, { text: msg, sender: "human" }]);

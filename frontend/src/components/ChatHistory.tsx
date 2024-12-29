@@ -28,7 +28,11 @@ export const ChatHistory = ({ messages }: ChatHistoryProps) => {
             text={msg.text}
             sender={msg.sender}
             key={idx}
-            previous={msg.sender == "bot" ? messages[idx - 1].text : undefined}
+            previous={
+              msg.sender == "bot" && idx > 0
+                ? messages[idx - 1].text
+                : undefined
+            }
           />
         ))}
       </ScrollShadow>
