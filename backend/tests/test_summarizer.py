@@ -8,19 +8,7 @@ def summarizer():
     with patch('modules.summarizer.AzureChatOpenAI') as MockLLM:
         # Mock the LLM
         MockLLM.return_value = MagicMock()
-        # Mock available agents
-        MockAgent1 = MagicMock()
-        MockAgent2 = MagicMock()
-        MockAgent3 = MagicMock()
-        agent_1 = MockAgent1.return_value
-        agent_1.name = "agent_1"
-        agent_2 = MockAgent2.return_value
-        agent_2.name = "agent_2"
-        agent_3 = MockAgent3.return_value
-        agent_3.name = "agent_3"
-        agents = [agent_1, agent_2, agent_3]
-        
-        return Summarizer(agents)
+        return Summarizer()
 
 def test_generate_answer(summarizer):
     # Mock state

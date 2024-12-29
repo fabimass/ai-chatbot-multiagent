@@ -6,10 +6,7 @@ from langchain_core.runnables import RunnableLambda
 
 class Summarizer:
     
-    def __init__(self, agent_list): 
-
-        # List with all the agents to supervise
-        self.agents = [agent.name for agent in agent_list]
+    def __init__(self): 
 
         # Instantiate a pre-trained Large Language Model from Azure OpenAI
         self.llm = AzureChatOpenAI(
@@ -37,7 +34,7 @@ class Summarizer:
         self.parser = StrOutputParser()
 
         # The chain orchestrates the whole flow
-        self.rag_chain = (
+        self.chain = (
             { "question": RunnableLambda(lambda inputs: inputs["question"]), "agents_output": RunnableLambda(lambda inputs: inputs["agents_output"]) }
             #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
             | self.prompt
@@ -47,5 +44,5 @@ class Summarizer:
 
     def generate_answer(self, state: State):
         print("Summarizing...")
-        answer = self.rag_chain.invoke({ "question": state["question"], "agents_output": state["agents"] })
+        answer = self.chain.invoke({ "question": state["question"], "agents_output": state["agents"] })
         return { "answer": answer }
