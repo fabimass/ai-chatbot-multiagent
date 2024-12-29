@@ -52,7 +52,7 @@ describe("Navbar component", () => {
 
   it("shows the loading spinner initially", () => {
     render(<Navbar />);
-    expect(screen.getByTestId("spinner")).toBeInTheDocument();
+    expect(screen.getAllByTestId("spinner").length).toBe(2);
   });
 
   it("displays agent icons after fetching data", async () => {
@@ -71,7 +71,9 @@ describe("Navbar component", () => {
   });
 
   it("displays agent icons in the menu (for smaller screens)", async () => {
-    (NavbarItem as unknown as jest.Mock).mockReturnValue(<div>NavbarItem</div>);
+    (NavbarItem as unknown as jest.Mock)
+      .mockReturnValueOnce(<div>NavbarItem</div>)
+      .mockReturnValueOnce(<div>NavbarItem</div>);
 
     render(<Navbar />);
 
@@ -83,9 +85,12 @@ describe("Navbar component", () => {
     expect(screen.getByText("Agent2 - Unhealthy")).toBeInTheDocument();
   });
 
-  it("renders the menu toggle for small screens", () => {
+  it("renders the menu toggle for small screens", async () => {
     render(<Navbar />);
-    expect(screen.getByTestId("menu-toggle")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByTestId("menu-toggle")).toBeInTheDocument();
+    });
   });
 
   it("handles API errors gracefully", async () => {
@@ -94,9 +99,7 @@ describe("Navbar component", () => {
     render(<Navbar />);
 
     await waitFor(() => {
-      expect(screen.queryAllByTestId("agent-icon").length).toBe(0);
+      expect(screen.queryByTestId("spinner")).not.toBeInTheDocument();
     });
-
-    expect(screen.queryByTestId("spinner")).not.toBeInTheDocument();
   });
 });

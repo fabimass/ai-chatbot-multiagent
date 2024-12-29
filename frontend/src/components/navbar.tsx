@@ -63,7 +63,7 @@ export const Navbar = () => {
       </NavbarContent>
 
       <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-        <NavbarMenuToggle />
+        {loading ? <Spinner size="sm" color="primary" /> : <NavbarMenuToggle />}
       </NavbarContent>
 
       <NavbarMenu className="bg-gray-50">
