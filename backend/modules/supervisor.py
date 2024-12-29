@@ -44,7 +44,7 @@ class Supervisor:
         self.parser = StrOutputParser()
 
         # The chain orchestrates the whole flow
-        self.supervisor_chain = (
+        self.chain = (
             { "question": RunnableLambda(lambda inputs: inputs["question"]), "history": RunnableLambda(lambda inputs: inputs["history"]) }
             #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
             | self.prompt
@@ -54,7 +54,7 @@ class Supervisor:
 
     def get_relevant_agents(self, state: State):
         print("Supervisor says: getting relevant agents...")
-        agents = self.supervisor_chain.invoke({"question": state["question"], "agents": self.agents, "history": state["history"]})
+        agents = self.chain.invoke({"question": state["question"], "agents": self.agents, "history": state["history"]})
         if agents == "":
             agents_list = []
         else:
