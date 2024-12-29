@@ -44,13 +44,13 @@ def test_connect(agent_rag, config):
          patch('modules.agent_rag.AzureSearch') as MockAzureSearch:
         
         # Test with OpenAI embeddings
-        agent_rag.connect(config)
+        agent_rag.connect()
         MockOpenAIEmbeddings.assert_called_once_with(model="ada-002", openai_api_version="2024-06-01")
         MockAzureSearch.assert_called_once()
 
         # Test with Google embeddings
         config["embeddings"] = "google"
-        agent_rag.connect(config)
+        agent_rag.connect()
         MockGoogleEmbeddings.assert_called_once_with(model="models/embedding-001")     
 
 def test_check_connection_success(agent_rag):
@@ -58,8 +58,15 @@ def test_check_connection_success(agent_rag):
     assert agent_rag.check_connection()["healthy"] is True
 
 def test_check_connection_failure(agent_rag):
-    agent_rag.vstore.similarity_search = MagicMock(side_effect=Exception("Connection error"))
+    agent_rag.connect = MagicMock(side_effect=[None, True])
+    agent_rag.vstore.similarity_search = MagicMock(side_effect=[Exception("Connection error"), Exception("Connection error")])
+
+    # There is no connection and it fails to reconnect
     assert agent_rag.check_connection()["healthy"] is False
+    agent_rag.connect.assert_called_once()
+
+    # There is no connection but it reconnects successfully
+    assert agent_rag.check_connection()["healthy"] is True
 
 def test_retrieve_context(agent_rag, test_variables):    
     # Mock similarity search results

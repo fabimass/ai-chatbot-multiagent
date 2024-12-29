@@ -14,9 +14,7 @@ class AgentCsv:
     def __init__(self, config): 
         self.name = f"agent_{config['agent_id']}"
         self.skills = config['agent_directive']
-        self.index_file_name = config["index_file_name"]
-        self.container_name = config["container_name"]
-        self.connection_string = config["connection_string"]
+        self.config = config
         self.status = ""
         
         # Blob storage instantiation
@@ -160,6 +158,9 @@ class AgentCsv:
         )
 
     def connect(self):
+        self.index_file_name = self.config["index_file_name"]
+        self.container_name = self.config["container_name"]
+        self.connection_string = self.config["connection_string"]
         print(f"{self.name} says: connecting to Azure Blob Storage...")
         try:
             blob_client = BlobServiceClient.from_connection_string(self.connection_string)

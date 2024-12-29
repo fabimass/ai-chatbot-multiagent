@@ -11,7 +11,7 @@ class AgentSql:
     def __init__(self, config): 
         self.name = f"agent_{config['agent_id']}"
         self.skills = config['agent_directive']
-        self.connection_string = config["connection_string"]
+        self.config = config
         self.status = ""
         
         # Database instantiation 
@@ -129,6 +129,7 @@ class AgentSql:
         )
 
     def connect(self):
+        self.connection_string = self.config["connection_string"]
         print(f"{self.name} says: connecting to database...")
         try:
             db = SQLDatabase.from_uri(self.connection_string)
