@@ -48,8 +48,10 @@ def test_check_connection_success(agent_sql):
     assert agent_sql.check_connection()["healthy"] is True
 
 def test_check_connection_failure(agent_sql):
+    agent_sql.connect = MagicMock(return_value=None)
     agent_sql.db.run = MagicMock(side_effect=Exception("Connection error"))
     assert agent_sql.check_connection()["healthy"] is False
+    agent_sql.connect.assert_called_once()
 
 def test_get_schema(agent_sql, test_variables):
     agent_sql.db.run = MagicMock(return_value=test_variables["mock_schema"])

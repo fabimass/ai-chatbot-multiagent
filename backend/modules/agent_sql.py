@@ -12,6 +12,7 @@ class AgentSql:
         self.name = f"agent_{config['agent_id']}"
         self.skills = config['agent_directive']
         self.connection_string = config["connection_string"]
+        self.status = ""
         
         # Database instantiation 
         self.db = self.connect()
@@ -135,6 +136,7 @@ class AgentSql:
             return db
         except Exception as e:
             print(f"{self.name} says: ERROR {e}")
+            self.status = e
             return None
 
     def check_connection(self):
@@ -142,10 +144,13 @@ class AgentSql:
         try:
             self.db.run("""SELECT 1""")
             print(f"{self.name} says: connection up and running.")
-            return { "healthy": True, "info": "Agent up and running" }
+            self.status = "up and running"
+            return { "healthy": True, "info": self.status }
         except Exception as e:
             print(f"{self.name} says: ERROR {e}")
-            return { "healthy": False, "info": e }
+            # Try to reconnect
+            self.db = self.connect()
+            return { "healthy": True if self.db is not None else False, "info": self.status }
 
     def get_schema(self):
         print(f"{self.name} says: retrieving database schema...")
@@ -188,9 +193,7 @@ class AgentSql:
             answer = self.entry_point_chain.invoke({"question": state["question"], "history": agent_history})
             print(f"{self.name} says: {answer}")
             if answer == 'CONTINUE':
-                # Reconnect with database if connection was closed
-                if(self.check_connection()["healthy"] is False):
-                    self.db = self.connect()
+                self.check_connection()
                 
                 # Get tables and columns from the database
                 schema = self.get_schema()
