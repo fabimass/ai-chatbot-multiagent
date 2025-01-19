@@ -40,7 +40,6 @@ class Summarizer:
             { "question": RunnableLambda(lambda inputs: inputs["question"]), "agents_output": RunnableLambda(lambda inputs: inputs["agents_output"]) }
             #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
             | self.prompt
-            | RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
             | self.llm
             | self.parser
         )
