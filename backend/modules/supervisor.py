@@ -27,7 +27,7 @@ class Supervisor:
             "The list must be a comma separated string containing only the agent names. "
             "Respond only with the generated list, nothing else. "
             "If you have doubts between two agents, then add them both to the list. "
-            "NEVER provide an empty list. If you think none of the agents are capable, then add all of them to the list. "
+            "If you think none of the agents are capable, then return an empty list. "
             "\n\n"
             "Chat history: {history}"
         )

@@ -16,10 +16,12 @@ class Summarizer:
 
         # The system prompt guides the agent on how to respond
         self.system_prompt = (
-            "You are an AI assistant tasked with summarizing a conversation between the following agents: {agents_output}. "
-            "Given the following user question, your task is to analyze each of the responses and provide the best possible response to the user. "
-            "Ignore agents that answered that they don't know or similar. "
-            "Do not make up new information that is not explicitly in the workers response. "
+            "You are an AI assistant tasked with summarizing a list of responses. "
+            "If you see NO RESPONSES, respond with: 'This question falls outside of my area of knowledge'. "
+            "Else, given the following user question, your task is to analyze each of the provided responses and provide the best possible response to the user. "
+            "DO NOT provide any information that is not in the responses. "
+            "\n\n"
+            "Responses: {agents_output}"
         )
 
         # The prompt puts together the system prompt with the user question
@@ -38,11 +40,16 @@ class Summarizer:
             { "question": RunnableLambda(lambda inputs: inputs["question"]), "agents_output": RunnableLambda(lambda inputs: inputs["agents_output"]) }
             #| RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
             | self.prompt
+            | RunnableLambda(lambda inputs: (print(f"Logging Inputs: {inputs}") or inputs))
             | self.llm
             | self.parser
         )
 
     def generate_answer(self, state: State):
         print("Summarizing...")
-        answer = self.chain.invoke({ "question": state["question"], "agents_output": state["agents"] })
-        return { "answer": answer }
+        if "agents" not in state:    
+            answer = self.chain.invoke({ "question": state["question"], "agents_output": "NO RESPONSES" })
+            return { "answer": answer, "agents": {} }
+        else:
+            answer = self.chain.invoke({ "question": state["question"], "agents_output": state["agents"] })
+            return { "answer": answer }
