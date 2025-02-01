@@ -7,9 +7,15 @@ export interface ChatMessageProps {
   text: string;
   sender: string;
   previous?: string;
+  feedbackDisabled?: boolean;
 }
 
-export const ChatMessage = ({ text, sender, previous }: ChatMessageProps) => {
+export const ChatMessage = ({
+  text,
+  sender,
+  previous,
+  feedbackDisabled,
+}: ChatMessageProps) => {
   const [liked, setLiked] = useState<boolean | null>(null); // Tracks if the message was liked or disliked
   const [animating, setAnimating] = useState(false); // Controls animation on click
   const [showIcons, setShowIcons] = useState(true); // Controls visibility of icons
@@ -80,7 +86,7 @@ export const ChatMessage = ({ text, sender, previous }: ChatMessageProps) => {
           notch={true}
           retracted={false}
         />
-        {sender === "bot" && showIcons && (
+        {!feedbackDisabled && sender === "bot" && showIcons && (
           <div className="flex space-x-2 mt-2 absolute bottom-2 left-8">
             <button
               onClick={handleThumbsUp}

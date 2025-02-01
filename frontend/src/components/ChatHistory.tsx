@@ -33,6 +33,7 @@ export const ChatHistory = ({ messages }: ChatHistoryProps) => {
                 ? messages[idx - 1].text
                 : undefined
             }
+            feedbackDisabled={idx == 0}
           />
         ))}
       </ScrollShadow>
