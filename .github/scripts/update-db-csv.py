@@ -79,6 +79,7 @@ for root, dirs, files in os.walk(source_folder):
             index_exists = True
             break
     # Create index.csv if it was not provided
+    print("Index file not provided. Proceeding to create one...")
     with open(index_file_path, mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow(["FILE_NAME", "SUMMARY"])
@@ -108,6 +109,8 @@ for root, dirs, files in os.walk(source_folder):
             print(f"{file} uploaded successfully.")
 
 # Finally upload index file
+print(f"Uploading {index_file_name}...")
 blob_client = container_client.get_blob_client(index_file_name)
 with open(index_file_path, "rb") as data:
     blob_client.upload_blob(data, overwrite=True)
+print(f"{index_file_name} uploaded successfully.")
