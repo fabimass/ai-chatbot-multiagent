@@ -24,5 +24,37 @@ jobs:
       - name: Install dependencies
         run: pip install azure-storage-blob langchain==0.2.11 langchain-community==0.2.10 langchain-openai==0.1.22 pandas
 
+      - name: Get public IP address
+        id: get_ip
+        run: echo "PUBLIC_IP=$(curl -s https://api.ipify.org)" >> $GITHUB_ENV
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: >
+            {
+              "clientId": "${{ secrets.AZURE_CLIENT_ID }}",
+              "clientSecret": "${{ secrets.AZURE_CLIENT_SECRET }}",
+              "tenantId": "${{ secrets.AZURE_TENANT_ID }}",
+              "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+            }
+
+      - name: Add IP to Azure OpenAI whitelist
+        run: |
+          az cognitiveservices account network-rule add \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name ${{ secrets.AZURE_OPENAI_SERVICE_NAME }} \
+            --ip-address ${{ env.PUBLIC_IP }}
+
+      - name: Wait for 30 seconds
+        run: sleep 30
+
       - name: Run script
         run: python -u .github/scripts/update-db-csv.py
+
+      - name: Remove IP from Azure OpenAI whitelist
+        run: |
+          az cognitiveservices account network-rule remove \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name ${{ secrets.AZURE_OPENAI_SERVICE_NAME }} \
+            --ip-address ${{ env.PUBLIC_IP }}
