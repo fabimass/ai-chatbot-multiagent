@@ -10,6 +10,8 @@ on:
 env:
   AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
   CSV_CONTAINER: ${{ vars.CSV_CONTAINER }}
+  AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+  AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
 
 jobs:
   update_db:
@@ -20,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: pip install azure-storage-blob
+        run: pip install azure-storage-blob langchain==0.2.11 langchain-community==0.2.10 langchain-openai==0.1.22 pandas
 
       - name: Run script
         run: python -u .github/scripts/update-db-csv.py
